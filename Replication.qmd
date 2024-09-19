@@ -45,9 +45,9 @@ include-in-header:
 
 ```{r}
 # load the packages planned to be used 
-pacman::p_load("tidyverse","cowplot","magrittr","bruceR", 
+pacman::p_load("tidyverse","magrittr","bruceR","glue","cowplot", 
                "knitr", "kableExtra", "pander", "modelsummary",
-               "skimr", "dtplyr", "readstata13", "fixest")
+               "skimr", "psych", "readstata13", "fixest")
 
 # set working dirrectory
 setwd("G:/OneDrive - american.edu/(C) American/수업/2024 Fall/Conduct 1/replication/ReplicationParkFavero2023")
@@ -83,6 +83,7 @@ giftedc <- gifted %>%
 model <- lm(gift_black_p ~ wexpwhite_c + tot_black + tot_latino + gift_total + 
             frp + tot_enr + highschool_ccd + urban + south, data = giftedc)
 
+# dealing with outliers based on studentized residual and cook's distance 
 giftedfin <- giftedc %>% 
   cbind(r = MASS::studres(model)) %>% 
   cbind(cooksd = cooks.distance(model)) %>% 
@@ -120,6 +121,7 @@ model2 <- lm(gift_black_p ~ wexpwhite_c + tblack_c + I(tblack_c^2) +
              tot_enr + highschool_ccd + urban + south, data = giftedc2,
              na.action=na.exclude) 
 
+# dealing with outliers based on studentized residual and cook's distance 
 giftedfin2 <- giftedc2 %>% 
   cbind(r = MASS::studres(model2)) %>% 
   cbind(cooksd = cooks.distance(model2)) %>% 
@@ -183,14 +185,14 @@ modelsummary(models = list(`model1.1`= model1_1,
                            `model1.2`= model1_2, 
                            `model1.3`= model1_3),
              fmt = 3, 
-             estimate  = "{estimate} ({p.value})",
+             estimate  = "{estimate} ({p.value}) {stars}",
              statistic = NULL,
              stars = T,
              coef_map  = dict,
              output = "markdown",
              gof_map = gm,
              notes = "Note: P values are reported in parentheses. Two-way clustered robust standard errors are used. The explicit bias and the percentage of Black teachers variables are mean-centered.",
-             title = 'Percentage of Students in Gifted Program Who Are Black (Explicit Bias)')
+             title = 'Table 1: Percentage of Students in Gifted Program Who Are Black (Explicit Bias)')
 
 
 

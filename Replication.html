@@ -138,9 +138,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="loading-the-packages-and-data">2. Loading the Packages and Data</h2>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load the packages planned to be used </span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(<span class="st">"tidyverse"</span>,<span class="st">"cowplot"</span>,<span class="st">"magrittr"</span>,<span class="st">"bruceR"</span>, </span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(<span class="st">"tidyverse"</span>,<span class="st">"magrittr"</span>,<span class="st">"bruceR"</span>,<span class="st">"glue"</span>,<span class="st">"cowplot"</span>, </span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>               <span class="st">"knitr"</span>, <span class="st">"kableExtra"</span>, <span class="st">"pander"</span>, <span class="st">"modelsummary"</span>,</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>               <span class="st">"skimr"</span>, <span class="st">"dtplyr"</span>, <span class="st">"readstata13"</span>, <span class="st">"fixest"</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>               <span class="st">"skimr"</span>, <span class="st">"psych"</span>, <span class="st">"readstata13"</span>, <span class="st">"fixest"</span>)</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co"># set working dirrectory</span></span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">setwd</span>(<span class="st">"G:/OneDrive - american.edu/(C) American/수업/2024 Fall/Conduct 1/replication/ReplicationParkFavero2023"</span>)</span>
@@ -176,24 +176,25 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">lm</span>(gift_black_p <span class="sc">~</span> wexpwhite_c <span class="sc">+</span> tot_black <span class="sc">+</span> tot_latino <span class="sc">+</span> gift_total <span class="sc">+</span> </span>
 <span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>            frp <span class="sc">+</span> tot_enr <span class="sc">+</span> highschool_ccd <span class="sc">+</span> urban <span class="sc">+</span> south, <span class="at">data =</span> giftedc)</span>
 <span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>giftedfin <span class="ot">&lt;-</span> giftedc <span class="sc">%&gt;%</span> </span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cbind</span>(<span class="at">r =</span> MASS<span class="sc">::</span><span class="fu">studres</span>(model)) <span class="sc">%&gt;%</span> </span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cbind</span>(<span class="at">cooksd =</span> <span class="fu">cooks.distance</span>(model)) <span class="sc">%&gt;%</span> </span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(r<span class="sc">&gt;=-</span><span class="dv">3</span> <span class="sc">&amp;</span> r<span class="sc">&lt;=</span><span class="dv">3</span> <span class="sc">&amp;</span> cooksd <span class="sc">&lt;=</span>(<span class="dv">4</span><span class="sc">/</span><span class="dv">18643</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">wexpwhite_mt =</span> <span class="fu">mean</span>(wexp_white),</span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>         <span class="at">wexpwhite_ct =</span> wexp_white <span class="sc">-</span> wexpwhite_mt)</span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="co"># discriptive statistics </span></span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>giftedfin <span class="sc">%&gt;%</span></span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(</span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>    gift_black_p, wexp_white, wexpwhite_ct, wiat_white, tot_black, </span>
-<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>    tot_latino, gift_total, frp, tot_enr, highschool_ccd, urban, south</span>
-<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>  psych<span class="sc">::</span><span class="fu">describe</span>() <span class="sc">%&gt;%</span> </span>
-<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">!</span>vars <span class="sc">&amp;</span> <span class="sc">!</span>trimmed <span class="sc">&amp;</span> <span class="sc">!</span>mad <span class="sc">&amp;</span> <span class="sc">!</span>range <span class="sc">&amp;</span> <span class="sc">!</span>se) <span class="sc">%&gt;%</span></span>
-<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>  janitor<span class="sc">::</span><span class="fu">clean_names</span>() <span class="sc">%&gt;%</span> </span>
-<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.numeric), <span class="sc">~</span> <span class="fu">round</span>(., <span class="dv">3</span>))) <span class="sc">%&gt;%</span> </span>
-<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">digits =</span> <span class="dv">3</span>, <span class="at">format.args =</span> <span class="fu">list</span>(<span class="at">big.mark =</span> <span class="st">","</span>)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="co"># dealing with outliers based on studentized residual and cook's distance </span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>giftedfin <span class="ot">&lt;-</span> giftedc <span class="sc">%&gt;%</span> </span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cbind</span>(<span class="at">r =</span> MASS<span class="sc">::</span><span class="fu">studres</span>(model)) <span class="sc">%&gt;%</span> </span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cbind</span>(<span class="at">cooksd =</span> <span class="fu">cooks.distance</span>(model)) <span class="sc">%&gt;%</span> </span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(r<span class="sc">&gt;=-</span><span class="dv">3</span> <span class="sc">&amp;</span> r<span class="sc">&lt;=</span><span class="dv">3</span> <span class="sc">&amp;</span> cooksd <span class="sc">&lt;=</span>(<span class="dv">4</span><span class="sc">/</span><span class="dv">18643</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">wexpwhite_mt =</span> <span class="fu">mean</span>(wexp_white),</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>         <span class="at">wexpwhite_ct =</span> wexp_white <span class="sc">-</span> wexpwhite_mt)</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="co"># discriptive statistics </span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>giftedfin <span class="sc">%&gt;%</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>    gift_black_p, wexp_white, wexpwhite_ct, wiat_white, tot_black, </span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>    tot_latino, gift_total, frp, tot_enr, highschool_ccd, urban, south</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>  psych<span class="sc">::</span><span class="fu">describe</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">!</span>vars <span class="sc">&amp;</span> <span class="sc">!</span>trimmed <span class="sc">&amp;</span> <span class="sc">!</span>mad <span class="sc">&amp;</span> <span class="sc">!</span>range <span class="sc">&amp;</span> <span class="sc">!</span>se) <span class="sc">%&gt;%</span></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>  janitor<span class="sc">::</span><span class="fu">clean_names</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.numeric), <span class="sc">~</span> <span class="fu">round</span>(., <span class="dv">3</span>))) <span class="sc">%&gt;%</span> </span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">digits =</span> <span class="dv">3</span>, <span class="at">format.args =</span> <span class="fu">list</span>(<span class="at">big.mark =</span> <span class="st">","</span>)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
 <colgroup>
@@ -374,26 +375,27 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>             tot_enr <span class="sc">+</span> highschool_ccd <span class="sc">+</span> urban <span class="sc">+</span> south, <span class="at">data =</span> giftedc2,</span>
 <span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>             <span class="at">na.action=</span>na.exclude) </span>
 <span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>giftedfin2 <span class="ot">&lt;-</span> giftedc2 <span class="sc">%&gt;%</span> </span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cbind</span>(<span class="at">r =</span> MASS<span class="sc">::</span><span class="fu">studres</span>(model2)) <span class="sc">%&gt;%</span> </span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cbind</span>(<span class="at">cooksd =</span> <span class="fu">cooks.distance</span>(model2)) <span class="sc">%&gt;%</span> </span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(r<span class="sc">&gt;=-</span><span class="dv">3</span> <span class="sc">&amp;</span> r<span class="sc">&lt;=</span><span class="dv">3</span> <span class="sc">&amp;</span> cooksd <span class="sc">&lt;=</span>(<span class="dv">4</span><span class="sc">/</span><span class="dv">7431</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">tblack_cm =</span> <span class="fu">mean</span>(tblack),</span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>         <span class="at">tblack_cc =</span> tblack <span class="sc">-</span> tblack_cm,</span>
-<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>         <span class="at">wexpwhite_mt =</span> <span class="fu">mean</span>(wexp_white),</span>
-<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>         <span class="at">wexpwhite_ct =</span> wexp_white <span class="sc">-</span> wexpwhite_mt)</span>
-<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a><span class="co"># discriptive statistics </span></span>
-<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>giftedfin2 <span class="sc">%&gt;%</span></span>
-<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(</span>
-<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>     gift_black_p, wexp_white,wexpwhite_ct, wiat_white, tot_black, tot_latino,</span>
-<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>     gift_total, frp, tot_enr, highschool_ccd, urban, south, tblack, thispanic</span>
-<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>  psych<span class="sc">::</span><span class="fu">describe</span>() <span class="sc">%&gt;%</span> </span>
-<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">!</span>vars <span class="sc">&amp;</span> <span class="sc">!</span>trimmed <span class="sc">&amp;</span> <span class="sc">!</span>mad <span class="sc">&amp;</span> <span class="sc">!</span>range <span class="sc">&amp;</span> <span class="sc">!</span>se) <span class="sc">%&gt;%</span></span>
-<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>  janitor<span class="sc">::</span><span class="fu">clean_names</span>() <span class="sc">%&gt;%</span> </span>
-<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.numeric), <span class="sc">~</span> <span class="fu">round</span>(., <span class="dv">3</span>))) <span class="sc">%&gt;%</span> </span>
-<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">digits =</span> <span class="dv">3</span>, <span class="at">format.args =</span> <span class="fu">list</span>(<span class="at">big.mark =</span> <span class="st">","</span>)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="co"># dealing with outliers based on studentized residual and cook's distance </span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>giftedfin2 <span class="ot">&lt;-</span> giftedc2 <span class="sc">%&gt;%</span> </span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cbind</span>(<span class="at">r =</span> MASS<span class="sc">::</span><span class="fu">studres</span>(model2)) <span class="sc">%&gt;%</span> </span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cbind</span>(<span class="at">cooksd =</span> <span class="fu">cooks.distance</span>(model2)) <span class="sc">%&gt;%</span> </span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(r<span class="sc">&gt;=-</span><span class="dv">3</span> <span class="sc">&amp;</span> r<span class="sc">&lt;=</span><span class="dv">3</span> <span class="sc">&amp;</span> cooksd <span class="sc">&lt;=</span>(<span class="dv">4</span><span class="sc">/</span><span class="dv">7431</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">tblack_cm =</span> <span class="fu">mean</span>(tblack),</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>         <span class="at">tblack_cc =</span> tblack <span class="sc">-</span> tblack_cm,</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>         <span class="at">wexpwhite_mt =</span> <span class="fu">mean</span>(wexp_white),</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>         <span class="at">wexpwhite_ct =</span> wexp_white <span class="sc">-</span> wexpwhite_mt)</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a><span class="co"># discriptive statistics </span></span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>giftedfin2 <span class="sc">%&gt;%</span></span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>     gift_black_p, wexp_white,wexpwhite_ct, wiat_white, tot_black, tot_latino,</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>     gift_total, frp, tot_enr, highschool_ccd, urban, south, tblack, thispanic</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>  psych<span class="sc">::</span><span class="fu">describe</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">!</span>vars <span class="sc">&amp;</span> <span class="sc">!</span>trimmed <span class="sc">&amp;</span> <span class="sc">!</span>mad <span class="sc">&amp;</span> <span class="sc">!</span>range <span class="sc">&amp;</span> <span class="sc">!</span>se) <span class="sc">%&gt;%</span></span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>  janitor<span class="sc">::</span><span class="fu">clean_names</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.numeric), <span class="sc">~</span> <span class="fu">round</span>(., <span class="dv">3</span>))) <span class="sc">%&gt;%</span> </span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">digits =</span> <span class="dv">3</span>, <span class="at">format.args =</span> <span class="fu">list</span>(<span class="at">big.mark =</span> <span class="st">","</span>)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
 <colgroup>
@@ -619,23 +621,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>                           <span class="st">`</span><span class="at">model1.2</span><span class="st">`</span><span class="ot">=</span> model1_2, </span>
 <span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>                           <span class="st">`</span><span class="at">model1.3</span><span class="st">`</span><span class="ot">=</span> model1_3),</span>
 <span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>             <span class="at">fmt =</span> <span class="dv">3</span>, </span>
-<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a>             <span class="at">estimate  =</span> <span class="st">"{estimate} ({p.value})"</span>,</span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a>             <span class="at">estimate  =</span> <span class="st">"{estimate} ({p.value}) {stars}"</span>,</span>
 <span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a>             <span class="at">statistic =</span> <span class="cn">NULL</span>,</span>
 <span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a>             <span class="at">stars =</span> T,</span>
 <span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a>             <span class="at">coef_map  =</span> dict,</span>
 <span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a>             <span class="at">output =</span> <span class="st">"markdown"</span>,</span>
 <span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a>             <span class="at">gof_map =</span> gm,</span>
 <span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a>             <span class="at">notes =</span> <span class="st">"Note: P values are reported in parentheses. Two-way clustered robust standard errors are used. The explicit bias and the percentage of Black teachers variables are mean-centered."</span>,</span>
-<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a>             <span class="at">title =</span> <span class="st">'Percentage of Students in Gifted Program Who Are Black (Explicit Bias)'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a>             <span class="at">title =</span> <span class="st">'Table 1: Percentage of Students in Gifted Program Who Are Black (Explicit Bias)'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <!-- preamble start -->
 
     <script>
-      function styleCell_4mkhe62u8rdhycqllgis(i, j, css_id) {
-        var table = document.getElementById("tinytable_4mkhe62u8rdhycqllgis");
+      function styleCell_ugglqokiyy91i0s63ywa(i, j, css_id) {
+        var table = document.getElementById("tinytable_ugglqokiyy91i0s63ywa");
         table.rows[i].cells[j].classList.add(css_id);
       }
       function insertSpanRow(i, colspan, content) {
-        var table = document.getElementById('tinytable_4mkhe62u8rdhycqllgis');
+        var table = document.getElementById('tinytable_ugglqokiyy91i0s63ywa');
         var newRow = table.insertRow(i);
         var newCell = newRow.insertCell(0);
         newCell.setAttribute("colspan", colspan);
@@ -643,8 +645,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
         // this may be unsafe, but innerText does not interpret <br>
         newCell.innerHTML = content;
       }
-      function spanCell_4mkhe62u8rdhycqllgis(i, j, rowspan, colspan) {
-        var table = document.getElementById("tinytable_4mkhe62u8rdhycqllgis");
+      function spanCell_ugglqokiyy91i0s63ywa(i, j, rowspan, colspan) {
+        var table = document.getElementById("tinytable_ugglqokiyy91i0s63ywa");
         const targetRow = table.rows[i];
         const targetCell = targetRow.cells[j];
         for (let r = 0; r < rowspan; r++) {
@@ -670,92 +672,92 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
         targetCell.rowSpan = rowspan;
         targetCell.colSpan = colspan;
       }
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(0, 0, 'tinytable_css_idc3c8fposjb51iufkatz6') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(0, 1, 'tinytable_css_idrs2wnht2zs4vubq3ykm1') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(0, 2, 'tinytable_css_idrs2wnht2zs4vubq3ykm1') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(0, 3, 'tinytable_css_idrs2wnht2zs4vubq3ykm1') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(1, 0, 'tinytable_css_idqqf1glqz7n17jyed2nxf') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(1, 1, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(1, 2, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(1, 3, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(2, 0, 'tinytable_css_idqqf1glqz7n17jyed2nxf') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(2, 1, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(2, 2, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(2, 3, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(3, 0, 'tinytable_css_idqqf1glqz7n17jyed2nxf') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(3, 1, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(3, 2, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(3, 3, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(4, 0, 'tinytable_css_idqqf1glqz7n17jyed2nxf') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(4, 1, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(4, 2, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(4, 3, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(5, 0, 'tinytable_css_idqqf1glqz7n17jyed2nxf') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(5, 1, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(5, 2, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(5, 3, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(6, 0, 'tinytable_css_idqqf1glqz7n17jyed2nxf') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(6, 1, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(6, 2, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(6, 3, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(7, 0, 'tinytable_css_idqqf1glqz7n17jyed2nxf') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(7, 1, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(7, 2, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(7, 3, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(8, 0, 'tinytable_css_idqqf1glqz7n17jyed2nxf') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(8, 1, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(8, 2, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(8, 3, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(9, 0, 'tinytable_css_idqqf1glqz7n17jyed2nxf') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(9, 1, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(9, 2, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(9, 3, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(10, 0, 'tinytable_css_idqqf1glqz7n17jyed2nxf') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(10, 1, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(10, 2, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(10, 3, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(11, 0, 'tinytable_css_idqqf1glqz7n17jyed2nxf') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(11, 1, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(11, 2, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(11, 3, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(12, 0, 'tinytable_css_idqqf1glqz7n17jyed2nxf') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(12, 1, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(12, 2, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(12, 3, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(13, 0, 'tinytable_css_idqqf1glqz7n17jyed2nxf') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(13, 1, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(13, 2, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(13, 3, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(14, 0, 'tinytable_css_idmit1d08pbhf5qsa8av5a') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(14, 1, 'tinytable_css_idw0ig7dj34cjys0ow2m8j') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(14, 2, 'tinytable_css_idw0ig7dj34cjys0ow2m8j') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(14, 3, 'tinytable_css_idw0ig7dj34cjys0ow2m8j') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(15, 0, 'tinytable_css_idqqf1glqz7n17jyed2nxf') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(15, 1, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(15, 2, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(15, 3, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(16, 0, 'tinytable_css_idqqf1glqz7n17jyed2nxf') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(16, 1, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(16, 2, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(16, 3, 'tinytable_css_idtqmjtphispz1pcuexuzy') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(17, 0, 'tinytable_css_idqqf1glqz7n17jyed2nxf') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(17, 1, 'tinytable_css_idqqf1glqz7n17jyed2nxf') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(17, 2, 'tinytable_css_idqqf1glqz7n17jyed2nxf') })
-window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(17, 3, 'tinytable_css_idqqf1glqz7n17jyed2nxf') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(0, 0, 'tinytable_css_idjnshz7j8lyyfq52kuojl') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(0, 1, 'tinytable_css_idkjh8y06e70xdvm7gybvg') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(0, 2, 'tinytable_css_idkjh8y06e70xdvm7gybvg') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(0, 3, 'tinytable_css_idkjh8y06e70xdvm7gybvg') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(1, 0, 'tinytable_css_idqt3z3lhqd9txwsswh1cg') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(1, 1, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(1, 2, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(1, 3, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(2, 0, 'tinytable_css_idqt3z3lhqd9txwsswh1cg') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(2, 1, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(2, 2, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(2, 3, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(3, 0, 'tinytable_css_idqt3z3lhqd9txwsswh1cg') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(3, 1, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(3, 2, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(3, 3, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(4, 0, 'tinytable_css_idqt3z3lhqd9txwsswh1cg') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(4, 1, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(4, 2, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(4, 3, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(5, 0, 'tinytable_css_idqt3z3lhqd9txwsswh1cg') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(5, 1, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(5, 2, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(5, 3, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(6, 0, 'tinytable_css_idqt3z3lhqd9txwsswh1cg') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(6, 1, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(6, 2, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(6, 3, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(7, 0, 'tinytable_css_idqt3z3lhqd9txwsswh1cg') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(7, 1, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(7, 2, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(7, 3, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(8, 0, 'tinytable_css_idqt3z3lhqd9txwsswh1cg') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(8, 1, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(8, 2, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(8, 3, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(9, 0, 'tinytable_css_idqt3z3lhqd9txwsswh1cg') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(9, 1, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(9, 2, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(9, 3, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(10, 0, 'tinytable_css_idqt3z3lhqd9txwsswh1cg') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(10, 1, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(10, 2, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(10, 3, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(11, 0, 'tinytable_css_idqt3z3lhqd9txwsswh1cg') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(11, 1, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(11, 2, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(11, 3, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(12, 0, 'tinytable_css_idqt3z3lhqd9txwsswh1cg') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(12, 1, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(12, 2, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(12, 3, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(13, 0, 'tinytable_css_idqt3z3lhqd9txwsswh1cg') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(13, 1, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(13, 2, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(13, 3, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(14, 0, 'tinytable_css_id3ke16jynu6bki2v42rqy') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(14, 1, 'tinytable_css_id5dqlxzujt79txzu5gv8v') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(14, 2, 'tinytable_css_id5dqlxzujt79txzu5gv8v') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(14, 3, 'tinytable_css_id5dqlxzujt79txzu5gv8v') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(15, 0, 'tinytable_css_idqt3z3lhqd9txwsswh1cg') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(15, 1, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(15, 2, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(15, 3, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(16, 0, 'tinytable_css_idqt3z3lhqd9txwsswh1cg') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(16, 1, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(16, 2, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(16, 3, 'tinytable_css_id3chdnnuh4o1f7ydh0jtk') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(17, 0, 'tinytable_css_idqt3z3lhqd9txwsswh1cg') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(17, 1, 'tinytable_css_idqt3z3lhqd9txwsswh1cg') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(17, 2, 'tinytable_css_idqt3z3lhqd9txwsswh1cg') })
+window.addEventListener('load', function () { styleCell_ugglqokiyy91i0s63ywa(17, 3, 'tinytable_css_idqt3z3lhqd9txwsswh1cg') })
     </script>
 
     <style>
-    .table td.tinytable_css_idc3c8fposjb51iufkatz6, .table th.tinytable_css_idc3c8fposjb51iufkatz6 {  text-align: left;  border-bottom: solid 0.1em #d3d8dc; }
-    .table td.tinytable_css_idrs2wnht2zs4vubq3ykm1, .table th.tinytable_css_idrs2wnht2zs4vubq3ykm1 {  text-align: center;  border-bottom: solid 0.1em #d3d8dc; }
-    .table td.tinytable_css_idqqf1glqz7n17jyed2nxf, .table th.tinytable_css_idqqf1glqz7n17jyed2nxf {  text-align: left; }
-    .table td.tinytable_css_idtqmjtphispz1pcuexuzy, .table th.tinytable_css_idtqmjtphispz1pcuexuzy {  text-align: center; }
-    .table td.tinytable_css_idmit1d08pbhf5qsa8av5a, .table th.tinytable_css_idmit1d08pbhf5qsa8av5a {  border-bottom: solid 0.05em black;  text-align: left; }
-    .table td.tinytable_css_idw0ig7dj34cjys0ow2m8j, .table th.tinytable_css_idw0ig7dj34cjys0ow2m8j {  border-bottom: solid 0.05em black;  text-align: center; }
+    .table td.tinytable_css_idjnshz7j8lyyfq52kuojl, .table th.tinytable_css_idjnshz7j8lyyfq52kuojl {  text-align: left;  border-bottom: solid 0.1em #d3d8dc; }
+    .table td.tinytable_css_idkjh8y06e70xdvm7gybvg, .table th.tinytable_css_idkjh8y06e70xdvm7gybvg {  text-align: center;  border-bottom: solid 0.1em #d3d8dc; }
+    .table td.tinytable_css_idqt3z3lhqd9txwsswh1cg, .table th.tinytable_css_idqt3z3lhqd9txwsswh1cg {  text-align: left; }
+    .table td.tinytable_css_id3chdnnuh4o1f7ydh0jtk, .table th.tinytable_css_id3chdnnuh4o1f7ydh0jtk {  text-align: center; }
+    .table td.tinytable_css_id3ke16jynu6bki2v42rqy, .table th.tinytable_css_id3ke16jynu6bki2v42rqy {  border-bottom: solid 0.05em black;  text-align: left; }
+    .table td.tinytable_css_id5dqlxzujt79txzu5gv8v, .table th.tinytable_css_id5dqlxzujt79txzu5gv8v {  border-bottom: solid 0.05em black;  text-align: center; }
     </style>
     <div class="container">
-      <table class="table table-borderless" id="tinytable_4mkhe62u8rdhycqllgis" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
+      <table class="table table-borderless" id="tinytable_ugglqokiyy91i0s63ywa" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
         <thead>
-        </thead><caption>Percentage of Students in Gifted Program Who Are Black (Explicit Bias)</caption>
+        </thead><caption>Table 1: Percentage of Students in Gifted Program Who Are Black (Explicit Bias)</caption>
               <tbody><tr>
                 <th scope="col"> </th>
                 <th scope="col">model1.1</th>
@@ -763,104 +765,103 @@ window.addEventListener('load', function () { styleCell_4mkhe62u8rdhycqllgis(17,
                 <th scope="col">model1.3</th>
               </tr>
         
-        </tbody><tfoot><tr><td colspan="4">+ p &lt; 0.1, * p &lt; 0.05, ** p &lt; 0.01, *** p &lt; 0.001</td></tr>
-<tr><td colspan="4">Note: P values are reported in parentheses. Two-way clustered robust standard errors are used. The explicit bias and the percentage of Black teachers variables are mean-centered.</td></tr></tfoot>
+        </tbody><tfoot><tr><td colspan="4">Note: P values are reported in parentheses. Two-way clustered robust standard errors are used. The explicit bias and the percentage of Black teachers variables are mean-centered.</td></tr></tfoot>
         <tbody>
                 <tr>
                   <td>Explicit Bias                         </td>
-                  <td>-12.860 (&lt;0.001)</td>
-                  <td>-9.243 (0.001) </td>
-                  <td>-7.010 (0.037) </td>
+                  <td>-12.860 (&lt;0.001) ***</td>
+                  <td>-9.243 (0.001) **  </td>
+                  <td>-7.010 (0.037) *   </td>
                 </tr>
                 <tr>
                   <td>Black teachers (%)                    </td>
-                  <td>                </td>
-                  <td>-0.029 (0.195) </td>
-                  <td>-0.031 (0.149) </td>
+                  <td>                    </td>
+                  <td>-0.029 (0.195)     </td>
+                  <td>-0.031 (0.149)     </td>
                 </tr>
                 <tr>
                   <td>Black teachers squared                </td>
-                  <td>                </td>
-                  <td>0.004 (&lt;0.001) </td>
-                  <td>0.004 (&lt;0.001) </td>
+                  <td>                    </td>
+                  <td>0.004 (&lt;0.001) *** </td>
+                  <td>0.004 (&lt;0.001) *** </td>
                 </tr>
                 <tr>
                   <td>Explicit Bias X Black teachers (%)    </td>
-                  <td>                </td>
-                  <td>               </td>
-                  <td>0.523 (0.148)  </td>
+                  <td>                    </td>
+                  <td>                   </td>
+                  <td>0.523 (0.148)      </td>
                 </tr>
                 <tr>
                   <td>Explicit Bias X Black teachers squared</td>
-                  <td>                </td>
-                  <td>               </td>
-                  <td>-0.010 (0.029) </td>
+                  <td>                    </td>
+                  <td>                   </td>
+                  <td>-0.010 (0.029) *   </td>
                 </tr>
                 <tr>
                   <td>Black students (%)                    </td>
-                  <td>0.727 (&lt;0.001)  </td>
-                  <td>0.704 (&lt;0.001) </td>
-                  <td>0.702 (&lt;0.001) </td>
+                  <td>0.727 (&lt;0.001) ***  </td>
+                  <td>0.704 (&lt;0.001) *** </td>
+                  <td>0.702 (&lt;0.001) *** </td>
                 </tr>
                 <tr>
                   <td>Hispanic teachers (%)                 </td>
-                  <td>                </td>
-                  <td>-0.004 (0.710) </td>
-                  <td>-0.007 (0.587) </td>
+                  <td>                    </td>
+                  <td>-0.004 (0.710)     </td>
+                  <td>-0.007 (0.587)     </td>
                 </tr>
                 <tr>
                   <td>Hispanic students (%)                 </td>
-                  <td>0.084 (&lt;0.001)  </td>
-                  <td>0.076 (&lt;0.001) </td>
-                  <td>0.078 (&lt;0.001) </td>
+                  <td>0.084 (&lt;0.001) ***  </td>
+                  <td>0.076 (&lt;0.001) *** </td>
+                  <td>0.078 (&lt;0.001) *** </td>
                 </tr>
                 <tr>
                   <td>Gifted students (%)                   </td>
-                  <td>0.025 (0.021)   </td>
-                  <td>0.009 (0.355)  </td>
-                  <td>0.009 (0.364)  </td>
+                  <td>0.025 (0.021) *     </td>
+                  <td>0.009 (0.355)      </td>
+                  <td>0.009 (0.364)      </td>
                 </tr>
                 <tr>
                   <td>Free or reduced lunch (%)             </td>
-                  <td>-0.008 (0.037)  </td>
-                  <td>-0.020 (&lt;0.001)</td>
-                  <td>-0.021 (&lt;0.001)</td>
+                  <td>-0.008 (0.037) *    </td>
+                  <td>-0.020 (&lt;0.001) ***</td>
+                  <td>-0.021 (&lt;0.001) ***</td>
                 </tr>
                 <tr>
                   <td>Total students                        </td>
-                  <td>-0.001 (&lt;0.001) </td>
-                  <td>-0.001 (&lt;0.001)</td>
-                  <td>-0.001 (&lt;0.001)</td>
+                  <td>-0.001 (&lt;0.001) *** </td>
+                  <td>-0.001 (&lt;0.001) ***</td>
+                  <td>-0.001 (&lt;0.001) ***</td>
                 </tr>
                 <tr>
                   <td>High schools                          </td>
-                  <td>0.074 (0.687)   </td>
-                  <td>-0.323 (0.272) </td>
-                  <td>-0.256 (0.340) </td>
+                  <td>0.074 (0.687)       </td>
+                  <td>-0.323 (0.272)     </td>
+                  <td>-0.256 (0.340)     </td>
                 </tr>
                 <tr>
                   <td>Urban schools                         </td>
-                  <td>-0.925 (&lt;0.001) </td>
-                  <td>-1.162 (&lt;0.001)</td>
-                  <td>-1.143 (&lt;0.001)</td>
+                  <td>-0.925 (&lt;0.001) *** </td>
+                  <td>-1.162 (&lt;0.001) ***</td>
+                  <td>-1.143 (&lt;0.001) ***</td>
                 </tr>
                 <tr>
                   <td>South                                 </td>
-                  <td>0.073 (0.733)   </td>
-                  <td>-0.295 (0.308) </td>
-                  <td>-0.288 (0.304) </td>
+                  <td>0.073 (0.733)       </td>
+                  <td>-0.295 (0.308)     </td>
+                  <td>-0.288 (0.304)     </td>
                 </tr>
                 <tr>
                   <td>R^2                                   </td>
-                  <td>0.768           </td>
-                  <td>0.826          </td>
-                  <td>0.826          </td>
+                  <td>0.768               </td>
+                  <td>0.826              </td>
+                  <td>0.826              </td>
                 </tr>
                 <tr>
                   <td>N                                     </td>
-                  <td>17,486          </td>
-                  <td>6,956          </td>
-                  <td>6,956          </td>
+                  <td>17,486              </td>
+                  <td>6,956              </td>
+                  <td>6,956              </td>
                 </tr>
         </tbody>
       </table>
