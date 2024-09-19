@@ -14,7 +14,6 @@ include-in-header:
         white-space: pre-wrap !important;
       }
       </style>
-
 ---
 
 ```{css, echo = FALSE}
@@ -47,11 +46,11 @@ include-in-header:
 ```{r}
 # load the packages planned to be used 
 pacman::p_load("tidyverse","cowplot","magrittr","bruceR", 
-               "knitr", "kableExtra", "pander",
+               "knitr", "kableExtra", "pander", "modelsummary",
                "skimr", "dtplyr", "readstata13", "fixest")
 
 # set working dirrectory
-setwd("G:/OneDrive - american.edu/(C) American/수업/2024 Fall/Conduct 1/replication/Replication_Park&Favero(2023)")
+setwd("G:/OneDrive - american.edu/(C) American/수업/2024 Fall/Conduct 1/replication/ReplicationParkFavero2023")
 getwd() 
 
 options(digits=10)
@@ -146,7 +145,7 @@ giftedfin2 %>%
 
 ## 3. Gifted Programs: Table 1
 
-```{r results = "asis", echo = F}
+```{r results = "asis", echo = T}
 # first column
 model1_1 <- feols(gift_black_p ~ wexpwhite_ct + tot_black + tot_latino + gift_total + frp + tot_enr + highschool_ccd + urban + south, vcov = ~ leaid + fips, data = giftedfin)
 
@@ -160,6 +159,9 @@ model1_3 <- feols(gift_black_p ~ wexpwhite_ct + tblack_cc + I(tblack_cc^2) + wex
 dict = c(
   "wexpwhite_ct" = "Explicit Bias",
   "tblack_cc" = "Black teachers (%)",
+  "I(tblack_cc^2)" = "Black teachers squared",
+  "wexpwhite_ct:tblack_cc" = "Explicit Bias X Black teachers (%)",
+  "wexpwhite_ct:I(tblack_cc^2)" = "Explicit Bias X Black teachers squared",
   "tot_black" = "Black students (%)",
   "thispanic" = "Hispanic teachers (%)",
   "tot_latino" = "Hispanic students (%)",
@@ -168,14 +170,28 @@ dict = c(
   "tot_enr" = "Total students",
   "highschool_ccd" = "High schools",
   "urban" = "Urban schools",
-  "south" = "South"
+  "south" = "South",
+  "(intercept)" = "Constant"
 )
 
-etable(model1_1, model1_2, model1_3, dict = dict, 
-       digits = 3, fitstat = ~ r2 + n + G, 
-       postprocess.df = pandoc.table.return, style = "rmarkdown",
-       signif.code = c("***"=0.001, "**"=0.01, "*"=0.05, "+"=0.10),
-       notes = "Note: + p<0.10, * p<0.05, ** p<0.01, *** p<0.001. P values are reported in parentheses. Two-way clustered robust standard errors are used. The explicit bias and the percentage of Black teachers variables are mean-centered.")
+f <- function(x) {format(round(x, 3), big.mark=",")}
+gm = list(
+  list("raw" = "r.squared", "clean" = "R^2", "fmt" = f),
+  list("raw" = "nobs", "clean" = "N", "fmt" = f))
+
+modelsummary(models = list(`model1.1`= model1_1,
+                           `model1.2`= model1_2, 
+                           `model1.3`= model1_3),
+             fmt = 3, 
+             estimate  = "{estimate} ({p.value})",
+             statistic = NULL,
+             stars = T,
+             coef_map  = dict,
+             output = "markdown",
+             gof_map = gm,
+             notes = "Note: P values are reported in parentheses. Two-way clustered robust standard errors are used. The explicit bias and the percentage of Black teachers variables are mean-centered.",
+             title = 'Percentage of Students in Gifted Program Who Are Black (Explicit Bias)')
+
 
 
 
