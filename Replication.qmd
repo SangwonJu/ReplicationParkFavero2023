@@ -1,0 +1,183 @@
+---
+title: "Replication of Park & Favero (2023) - JPART"
+author: "DPAP PA Sangwon Ju"
+format: 
+  html:
+    code-overflow: wrap
+    code-fold: false
+editor: visual
+include-in-header:
+  - text: |
+      <style>
+      .cell-output-stdout code {
+        word-break: break-wor !important;
+        white-space: pre-wrap !important;
+      }
+      </style>
+
+---
+
+```{css, echo = FALSE}
+.justify {
+  text-align: justify !important
+}
+```
+
+::: justify
+## 1. Introduction
+
+-   This report is the replication of "Park, J., & Favero, N. (2023). Race, Locality, and Representative Bureaucracy: Does Community Bias Matter?. *Journal of Public Administration Research and Theory*, *33*(4), 661-674."
+
+-   In the replication data, the pre-processing of the original data was conducted in R, and the main analyses were mostly done in STATA. I'm trying to get the completed pre-processed data by just executing the code originally written by the authors.
+
+    -   But the problem is that some of the original data that were used in the R script was not uploaded (i.e. Race_IAT_0316.rda, Race_IAT_1216.rda).
+
+    -   So, I skipped the data pre-processing procedure and just load the final STATA(.dta) file and started the analysis.
+
+-   I would try to replicate the tables using the data after the pre-processing and replicate what was done in STATA.
+
+    -   First, I would try to make a table for the descriptive statistics, which is not in the original article.
+
+    -   Second, I replicated '**Table 1**. Percentage of Students in Gifted Program Who Are Black (Explicit Bias)', '**Table 2**. Percentage of Students in Gifted Program Who Are Black (Implicit Bias)', '**Table 3**. Percentage of Students Receiving Out-of-School Suspensions Who Are Black (Explicit Bias)', and '**Table 4**. Percentage of Students Receiving Out-of-School Suspensions Who Are Black (Implicit Bias)'.
+
+    -   Third, I replicated '**Figure 1**. Associations of Black Teachers in High Versus Low Explicit Biased Counties' using ggplot2.
+
+## 2. Loading the Packages and Data
+
+```{r}
+# load the packages planned to be used 
+pacman::p_load("tidyverse","cowplot","magrittr","bruceR", 
+               "knitr", "kableExtra", "pander",
+               "skimr", "dtplyr", "readstata13", "fixest")
+
+# set working dirrectory
+setwd("G:/OneDrive - american.edu/(C) American/수업/2024 Fall/Conduct 1/replication/Replication_Park&Favero(2023)")
+getwd() 
+
+options(digits=10)
+```
+
+```{r eval = FALSE, meessage = FALSE}
+# the pre-processing script is not working properly because some of the rda files are missing
+source("./CRDC_IAT_MRP.R") 
+```
+
+```{r}
+# loading the data 
+rm(list=ls())
+gifted <- read.dta13("./Gifted_Program.dta")
+suspension <- read.dta13("./Gifted_Program.dta")
+```
+
+## 3. Gifted Programs: discriptive statistics
+
+```{r}
+#: column: page
+
+# for Model 1.1
+
+# grand mean centering 
+giftedc <- gifted %>%
+  mutate(wexpwhite_m = mean(wexp_white),
+         wexpwhite_c = wexp_white - wexpwhite_m)
+
+model <- lm(gift_black_p ~ wexpwhite_c + tot_black + tot_latino + gift_total + 
+            frp + tot_enr + highschool_ccd + urban + south, data = giftedc)
+
+giftedfin <- giftedc %>% 
+  cbind(r = MASS::studres(model)) %>% 
+  cbind(cooksd = cooks.distance(model)) %>% 
+  filter(r>=-3 & r<=3 & cooksd <=(4/18643)) %>%
+  mutate(wexpwhite_mt = mean(wexp_white),
+         wexpwhite_ct = wexp_white - wexpwhite_mt)
+
+# discriptive statistics 
+giftedfin %>%
+  dplyr::select(
+    gift_black_p, wexp_white, wexpwhite_ct, wiat_white, tot_black, 
+    tot_latino, gift_total, frp, tot_enr, highschool_ccd, urban, south
+  ) %>%
+  psych::describe() %>% 
+  dplyr::select(!vars & !trimmed & !mad & !range & !se) %>%
+  janitor::clean_names() %>% 
+  mutate(across(where(is.numeric), ~ round(., 3))) %>% 
+  kable(digits = 3, format.args = list(big.mark = ",")) 
+```
+
+```{r}
+#: column: page
+# for Model 1.2 & Model 1.3
+
+# grand mean centering 
+giftedc2 <- gifted %>%
+  drop_na(tblack) %>% 
+  mutate(tblack_m = mean(tblack),
+         tblack_c = tblack - tblack_m, 
+         wexpwhite_m = mean(wexp_white),
+         wexpwhite_c = wexp_white - wexpwhite_m)
+
+model2 <- lm(gift_black_p ~ wexpwhite_c + tblack_c + I(tblack_c^2) + 
+             tot_black + thispanic + tot_latino + gift_total + frp + 
+             tot_enr + highschool_ccd + urban + south, data = giftedc2,
+             na.action=na.exclude) 
+
+giftedfin2 <- giftedc2 %>% 
+  cbind(r = MASS::studres(model2)) %>% 
+  cbind(cooksd = cooks.distance(model2)) %>% 
+  filter(r>=-3 & r<=3 & cooksd <=(4/7431)) %>%
+  mutate(tblack_cm = mean(tblack),
+         tblack_cc = tblack - tblack_cm,
+         wexpwhite_mt = mean(wexp_white),
+         wexpwhite_ct = wexp_white - wexpwhite_mt)
+
+# discriptive statistics 
+giftedfin2 %>%
+  dplyr::select(
+     gift_black_p, wexp_white,wexpwhite_ct, wiat_white, tot_black, tot_latino,
+     gift_total, frp, tot_enr, highschool_ccd, urban, south, tblack, thispanic
+  ) %>%
+  psych::describe() %>% 
+  dplyr::select(!vars & !trimmed & !mad & !range & !se) %>%
+  janitor::clean_names() %>% 
+  mutate(across(where(is.numeric), ~ round(., 3))) %>% 
+  kable(digits = 3, format.args = list(big.mark = ",")) 
+
+```
+
+## 3. Gifted Programs: Table 1
+
+```{r results = "asis", echo = F}
+# first column
+model1_1 <- feols(gift_black_p ~ wexpwhite_ct + tot_black + tot_latino + gift_total + frp + tot_enr + highschool_ccd + urban + south, vcov = ~ leaid + fips, data = giftedfin)
+
+# second column
+model1_2 <- feols(gift_black_p ~ wexpwhite_ct + tblack_cc + I(tblack_cc^2) + tot_black + + thispanic + tot_latino + gift_total + frp + tot_enr + highschool_ccd + urban + south, vcov = ~ leaid + fips, data = giftedfin2)
+
+# third column
+model1_3 <- feols(gift_black_p ~ wexpwhite_ct + tblack_cc + I(tblack_cc^2) + wexpwhite_ct * tblack_cc + wexpwhite_ct * I(tblack_cc^2) + tot_black + + thispanic + tot_latino + gift_total + frp + tot_enr + highschool_ccd + urban + south, vcov = ~ leaid + fips, data = giftedfin2)
+
+# variable name
+dict = c(
+  "wexpwhite_ct" = "Explicit Bias",
+  "tblack_cc" = "Black teachers (%)",
+  "tot_black" = "Black students (%)",
+  "thispanic" = "Hispanic teachers (%)",
+  "tot_latino" = "Hispanic students (%)",
+  "gift_total" = "Gifted students (%)",
+  "frp" = "Free or reduced lunch (%)",
+  "tot_enr" = "Total students",
+  "highschool_ccd" = "High schools",
+  "urban" = "Urban schools",
+  "south" = "South"
+)
+
+etable(model1_1, model1_2, model1_3, dict = dict, 
+       digits = 3, fitstat = ~ r2 + n + G, 
+       postprocess.df = pandoc.table.return, style = "rmarkdown",
+       signif.code = c("***"=0.001, "**"=0.01, "*"=0.05, "+"=0.10),
+       notes = "Note: + p<0.10, * p<0.05, ** p<0.01, *** p<0.001. P values are reported in parentheses. Two-way clustered robust standard errors are used. The explicit bias and the percentage of Black teachers variables are mean-centered.")
+
+
+
+```
+:::

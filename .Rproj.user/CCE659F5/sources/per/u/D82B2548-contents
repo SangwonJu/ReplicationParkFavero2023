@@ -1,0 +1,4 @@
+giftedc2 %>% psych::describe()
+etable(model1_1, model1_2, model1_3,
+       digits = 3,
+       notes = "Note: + p<0.10, * p<0.05, ** p<0.01, *** p<0.001. P values are reported in parentheses. Two-way clustered robust standard errors are used. The explicit bias and the percentage of Black teachers variables are mean-centered.")
