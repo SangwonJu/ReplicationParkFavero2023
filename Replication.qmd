@@ -191,7 +191,7 @@ modelsummary(models = list(`model1.1`= model1_1,
              coef_map  = dict,
              output = "markdown",
              gof_map = gm,
-             notes = "Note: P values are reported in parentheses. Two-way clustered robust standard errors are used. The explicit bias and the percentage of Black teachers variables are mean-centered.",
+             notes = "Note: P values are reported in parentheses. Two-way clustered robust standard errors are used. The explicit bias and the percentage of Black teachers variables are mean-centered. +p < .10, *p < .05, **p < .01, ***p < .001",
              title = 'Table 1: Percentage of Students in Gifted Program Who Are Black (Explicit Bias)')
 
 
