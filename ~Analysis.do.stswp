@@ -4,14 +4,14 @@
 //Last updated date: 10.21.2022 
 *****************************************************************************
 *****************************************************************************
-cd "G:/OneDrive - american.edu/(C) American/수업/2024 Fall/Conduct 1/replication/Replication_Park&Favero(2023)"
+cd "\\tsclient\D\Database\CommunityRacialBias"
 clear
 
 ssc install estout, replace
 ssc install reghdfe, replace
 
 // Gifted Programs - Explicit Bias (Table 1)
-use Gifted_Program, clear
+use Gifted_Program
 
 egen wexpwhite_m = mean(wexp_white)
 gen wexpwhite_c = wexp_white - wexpwhite_m
@@ -44,7 +44,7 @@ eststo: reghdfe  `i' wexpwhite_ct tot_black tot_latino gift_total frp tot_enr hi
 
 // Explicit - Teacher
 clear
-use Gifted_Program, clear
+use Gifted_Program
 
 drop if tblack==.
 
@@ -53,10 +53,7 @@ gen tblack_c = tblack - tblack_m
 egen wexpwhite_m = mean(wexp_white)
 gen wexpwhite_c = wexp_white - wexpwhite_m
 
-su
-
 reg gift_black_p wexpwhite_c c.tblack_c##c.tblack_c tot_black thispanic tot_latino gift_total frp tot_enr highschool_ccd urban south
-
 
 predict r, rstudent
 twoway (scatter r tot_black)
@@ -94,9 +91,9 @@ label variable tot_enr "Total students"
 label variable highschool_ccd "High schools"
 label variable urban "Urban schools"
 label variable south "South"
-esttab, varwidth(21) modelwidth(8) label cells(b(star fmt(%9.3f)) p(par)) stats(r2 N, fmt(%9.3f %9.0g) labels(R-squared "N")) starlevels(+ 0.1 * 0.05 ** 0.01 *** 0.001) nonumbers mlabels(Model1.0 Model1.1 Model1.2 Model1.3) interaction(" X ") collabels(none) addnote("Note: + p<0.10, * p<0.05, ** p<0.01, *** p<0.001. P values are reported in parentheses. Two-way clustered robust standard errors are used. The explicit bias and the percentage of Black teachers variables are mean-centered.") alignment(l) nobaselevels 
+esttab using Gift_explicit.rtf, varwidth(21) modelwidth(8) label cells(b(star fmt(%9.3f)) p(par)) stats(r2 N, fmt(%9.3f %9.0g) labels(R-squared "N")) starlevels(+ 0.1 * 0.05 ** 0.01 *** 0.001) nonumbers mlabels(Model1.0 Model1.1 Model1.2 Model1.3) interaction(" X ") collabels(none) addnote("Note: + p<0.10, * p<0.05, ** p<0.01, *** p<0.001. P values are reported in parentheses. Two-way clustered robust standard errors are used. The explicit bias and the percentage of Black teachers variables are mean-centered.") alignment(l) nobaselevels 
 
-esttab , varwidth(21) modelwidth(8) label cells(b(star fmt(%9.3f)) se(par)) stats(r2 N, fmt(%9.3f %9.0g) labels(R-squared "N")) starlevels(+ 0.1 * 0.05 ** 0.01 *** 0.001) nonumbers mlabels(Model1.0 Model1.1 Model1.2 Model1.3) interaction(" X ") collabels(none) addnote("Note: + p<0.10, * p<0.05, ** p<0.01, *** p<0.001. Two-way clustered robust standard errors are reported in parentheses. The explicit bias and the percentage of Black teachers variables are mean-centered.") alignment(l) nobaselevels 
+esttab using Gift_explicit_se.rtf, varwidth(21) modelwidth(8) label cells(b(star fmt(%9.3f)) se(par)) stats(r2 N, fmt(%9.3f %9.0g) labels(R-squared "N")) starlevels(+ 0.1 * 0.05 ** 0.01 *** 0.001) nonumbers mlabels(Model1.0 Model1.1 Model1.2 Model1.3) interaction(" X ") collabels(none) addnote("Note: + p<0.10, * p<0.05, ** p<0.01, *** p<0.001. Two-way clustered robust standard errors are reported in parentheses. The explicit bias and the percentage of Black teachers variables are mean-centered.") alignment(l) nobaselevels 
 est clear
 
 summ
@@ -108,6 +105,10 @@ bcolor(*.6) fcolor(*.6) ytitle(" ", axis(2)) ylab(0 " ", axis(2))) ///
 plot1opts(msymbol(O)) plot2opts(msymbol(T)) plot(, label( "Low Explicit Bias(-1SD)" "High Explicit Bias(+1SD)" "Density(Black teachers)"))
 
 graph export figure1a.tif, width(2000)
+
+// Semiparametric regression (Figure A3.1)
+ssc install semipar, replace
+semipar gift_black_p wexpwhite_ct tot_black thispanic tot_latino gift_total frp tot_enr highschool_ccd urban south, nonpar(tblack) robust cluster(leaid) ci
 
 
 // Gifted Programs - Implicit Bias (Table 2)

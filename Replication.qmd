@@ -5,6 +5,7 @@ format:
   html:
     code-overflow: wrap
     code-fold: false
+    sidebar: true
 editor: visual
 include-in-header:
   - text: |
@@ -45,8 +46,9 @@ include-in-header:
 
 ```{r}
 # load the packages planned to be used 
-pacman::p_load("tidyverse","magrittr","bruceR","glue","cowplot", 
-               "knitr", "kableExtra", "pander", "modelsummary",
+pacman::p_load("tidyverse","magrittr","bruceR","cowplot","sjPlot", "patchwork",
+               "glue", "janitor",
+               "knitr", "kableExtra", "pander", "modelsummary", 
                "skimr", "psych", "readstata13", "fixest")
 
 # set working dirrectory
@@ -65,10 +67,10 @@ source("./CRDC_IAT_MRP.R")
 # loading the data 
 rm(list=ls())
 gifted <- read.dta13("./Gifted_Program.dta")
-suspension <- read.dta13("./Gifted_Program.dta")
+suspension <- read.dta13("./Suspension.dta")
 ```
 
-## 3. Gifted Programs: discriptive statistics
+## 3. Gifted Programs - explicit bias: discriptive statistics
 
 ```{r}
 #: column: page
@@ -145,7 +147,7 @@ giftedfin2 %>%
 
 ```
 
-## 3. Gifted Programs: Table 1
+## 3. Gifted Programs - explicit bias: Table 1
 
 ```{r results = "asis", echo = T}
 # first column
@@ -198,4 +200,706 @@ modelsummary(models = list(`model1.1`= model1_1,
 
 
 ```
+
+## 4. Gifted Programs - implicit bias: Descriptive Statistics
+
+```{r}
+#: column: page
+
+# for Model 2.1
+
+# grand mean centering 
+giftedc3 <- gifted %>%
+  mutate(wiatwhite_m = mean(wiat_white),
+         wiatwhite_c = wiat_white - wiatwhite_m)
+
+model3 <- lm(gift_black_p ~ wiatwhite_c + tot_black + tot_latino + gift_total + 
+            frp + tot_enr + highschool_ccd + urban + south, data = giftedc3)
+
+# dealing with outliers based on studentized residual and cook's distance 
+giftedfin3 <- giftedc3 %>% 
+  cbind(r = MASS::studres(model3)) %>% 
+  cbind(cooksd = cooks.distance(model3)) %>% 
+  filter(r>=-3 & r<=3 & cooksd <=(4/18643)) %>%
+  mutate(wiatwhite_mt = mean(wiat_white),
+         wiatwhite_ct = wiat_white - wiatwhite_mt)
+
+# discriptive statistics 
+giftedfin3 %>%
+  dplyr::select(
+    gift_black_p, wiat_white, wiatwhite_ct, wiat_white, tot_black, 
+    tot_latino, gift_total, frp, tot_enr, highschool_ccd, urban, south
+  ) %>%
+  psych::describe() %>% 
+  dplyr::select(!vars & !trimmed & !mad & !range & !se) %>%
+  janitor::clean_names() %>% 
+  mutate(across(where(is.numeric), ~ round(., 3))) %>% 
+  kable(digits = 3, format.args = list(big.mark = ",")) 
+```
+
+```{r}
+#: column: page
+# for Model 2.2 & Model 2.3
+
+# grand mean centering 
+giftedc4 <- gifted %>%
+  drop_na(tblack) %>% 
+  mutate(tblack_m = mean(tblack),
+         tblack_c = tblack - tblack_m, 
+         wiatwhite_m = mean(wiat_white),
+         wiatwhite_c = wiat_white - wiatwhite_m)
+
+model4 <- lm(gift_black_p ~ wiatwhite_c + tblack_c + I(tblack_c^2) + 
+             tot_black + thispanic + tot_latino + gift_total + frp + 
+             tot_enr + highschool_ccd + urban + south, data = giftedc4,
+             na.action=na.exclude) 
+
+# dealing with outliers based on studentized residual and cook's distance 
+giftedfin4 <- giftedc4 %>% 
+  cbind(r = MASS::studres(model4)) %>% 
+  cbind(cooksd = cooks.distance(model4)) %>% 
+  filter(r>=-3 & r<=3 & cooksd <=(4/7431)) %>%
+  mutate(tblack_cm = mean(tblack),
+         tblack_cc = tblack - tblack_cm,
+         wiatwhite_mt = mean(wiat_white),
+         wiatwhite_ct = wiat_white - wiatwhite_mt)
+
+# discriptive statistics 
+giftedfin4 %>%
+  dplyr::select(
+     gift_black_p, wiat_white,wiatwhite_ct, wiat_white, tot_black, tot_latino,
+     gift_total, frp, tot_enr, highschool_ccd, urban, south, tblack, thispanic
+  ) %>%
+  psych::describe() %>% 
+  dplyr::select(!vars & !trimmed & !mad & !range & !se) %>%
+  janitor::clean_names() %>% 
+  mutate(across(where(is.numeric), ~ round(., 3))) %>% 
+  kable(digits = 3, format.args = list(big.mark = ",")) 
+
+```
+
+## 4. Gifted Programs - implicit bias: Table 2
+
+```{r results = "asis", echo = T}
+# first column
+model2_1 <- feols(gift_black_p ~ wiatwhite_ct + tot_black + tot_latino + gift_total + frp + tot_enr + highschool_ccd + urban + south, vcov = ~ leaid + fips, data = giftedfin3)
+
+# second column
+model2_2 <- feols(gift_black_p ~ wiatwhite_ct + tblack_cc + I(tblack_cc^2) + tot_black + + thispanic + tot_latino + gift_total + frp + tot_enr + highschool_ccd + urban + south, vcov = ~ leaid + fips, data = giftedfin4)
+
+# third column
+model2_3 <- feols(gift_black_p ~ wiatwhite_ct + tblack_cc + I(tblack_cc^2) + wiatwhite_ct * tblack_cc + wiatwhite_ct * I(tblack_cc^2) + tot_black + + thispanic + tot_latino + gift_total + frp + tot_enr + highschool_ccd + urban + south, vcov = ~ leaid + fips, data = giftedfin4)
+
+# variable name
+dict = c(
+  "wiatwhite_ct" = "Implicit Bias",
+  "tblack_cc" = "Black teachers (%)",
+  "I(tblack_cc^2)" = "Black teachers squared",
+  "wiatwhite_ct:tblack_cc" = "Implicit Bias X Black teachers (%)",
+  "wiatwhite_ct:I(tblack_cc^2)" = "Implicit Bias X Black teachers squared",
+  "tot_black" = "Black students (%)",
+  "thispanic" = "Hispanic teachers (%)",
+  "tot_latino" = "Hispanic students (%)",
+  "gift_total" = "Gifted students (%)",
+  "frp" = "Free or reduced lunch (%)",
+  "tot_enr" = "Total students",
+  "highschool_ccd" = "High schools",
+  "urban" = "Urban schools",
+  "south" = "South",
+  "(intercept)" = "Constant"
+)
+
+f <- function(x) {format(round(x, 3), big.mark=",")}
+gm = list(
+  list("raw" = "r.squared", "clean" = "R^2", "fmt" = f),
+  list("raw" = "nobs", "clean" = "N", "fmt" = f))
+
+modelsummary(models = list(`model2.1`= model2_1,
+                           `model2.2`= model2_2, 
+                           `model2.3`= model2_3),
+             fmt = 3, 
+             estimate  = "{estimate} ({p.value}) {stars}",
+             statistic = NULL,
+             stars = T,
+             coef_map  = dict,
+             output = "markdown",
+             gof_map = gm,
+             notes = "Note: P values are reported in parentheses. Two-way clustered robust standard errors are used. The explicit bias and the percentage of Black teachers variables are mean-centered. + p < .10, * p < .05, ** p < .01, *** p < .001",
+             title = 'Table 2: Percentage of Students in Gifted Program Who Are Black (Implicit Bias)')
+
+```
+
+## 5. Suspension - explicit bias: discriptive statistics
+
+```{r}
+#: column: page
+
+# for Model 3.1
+
+# grand mean centering 
+suspensionc <- suspension %>%
+  mutate(wexpwhite_m = mean(wexp_white),
+         wexpwhite_c = wexp_white - wexpwhite_m)
+
+model5 <- lm(sus_black_p ~ wexpwhite_c + tot_black + tot_latino + sus_total + 
+            frp + tot_enr + highschool_ccd + urban + south, data = suspensionc)
+
+# dealing with outliers based on studentized residual and cook's distance 
+suspensionfin <- suspensionc %>% 
+  cbind(r = MASS::studres(model5)) %>% 
+  cbind(cooksd = cooks.distance(model5)) %>% 
+  filter(r>=-3 & r<=3 & cooksd <=(4/18895)) %>%
+  mutate(wexpwhite_mt = mean(wexp_white),
+         wexpwhite_ct = wexp_white - wexpwhite_mt)
+
+# discriptive statistics 
+suspensionfin %>%
+  dplyr::select(
+    sus_black_p, wexp_white, wexpwhite_ct, wiat_white, tot_black, 
+    tot_latino, sus_total, frp, tot_enr, highschool_ccd, urban, south
+  ) %>%
+  psych::describe() %>% 
+  dplyr::select(!vars & !trimmed & !mad & !range & !se) %>%
+  janitor::clean_names() %>% 
+  mutate(across(where(is.numeric), ~ round(., 3))) %>% 
+  kable(digits = 3, format.args = list(big.mark = ",")) 
+```
+
+```{r}
+#: column: page
+# for Model 3.2 & Model 3.3
+
+# grand mean centering 
+suspensionc2 <- suspension %>%
+  drop_na(tblack) %>% 
+  mutate(tblack_m = mean(tblack),
+         tblack_c = tblack - tblack_m, 
+         wexpwhite_m = mean(wexp_white),
+         wexpwhite_c = wexp_white - wexpwhite_m)
+
+model6 <- lm(sus_black_p ~ wexpwhite_c + tblack_c + I(tblack_c^2) + 
+             tot_black + thispanic + tot_latino + sus_total + frp + 
+             tot_enr + highschool_ccd + urban + south, data = suspensionc2,
+             na.action=na.exclude) 
+
+# dealing with outliers based on studentized residual and cook's distance 
+suspensionfin2 <- suspensionc2 %>% 
+  cbind(r = MASS::studres(model6)) %>% 
+  cbind(cooksd = cooks.distance(model6)) %>% 
+  filter(r>=-3 & r<=3 & cooksd <=(4/6677)) %>%
+  mutate(tblack_cm = mean(tblack),
+         tblack_cc = tblack - tblack_cm,
+         wexpwhite_mt = mean(wexp_white),
+         wexpwhite_ct = wexp_white - wexpwhite_mt)
+
+# discriptive statistics 
+suspensionfin2 %>%
+  dplyr::select(
+     sus_black_p, wexp_white,wexpwhite_ct, wiat_white, tot_black, tot_latino,
+     sus_total, frp, tot_enr, highschool_ccd, urban, south, tblack, thispanic
+  ) %>%
+  psych::describe() %>% 
+  dplyr::select(!vars & !trimmed & !mad & !range & !se) %>%
+  janitor::clean_names() %>% 
+  mutate(across(where(is.numeric), ~ round(., 3))) %>% 
+  kable(digits = 3, format.args = list(big.mark = ",")) 
+
+```
+
+## 5. Suspension - explicit bias: Table 3
+
+```{r results = "asis", echo = T}
+# first column
+model3_1 <- feols(sus_black_p ~ wexpwhite_ct + tot_black + tot_latino + sus_total + frp + tot_enr + highschool_ccd + urban + south, vcov = ~ leaid + fips, data = suspensionfin)
+
+# second column
+model3_2 <- feols(sus_black_p ~ wexpwhite_ct + tblack_cc + I(tblack_cc^2) + tot_black + thispanic + tot_latino + sus_total + frp + tot_enr + highschool_ccd + urban + south, vcov = ~ leaid + fips, data = suspensionfin2)
+
+# third column
+model3_3 <- feols(sus_black_p ~ wexpwhite_ct + tblack_cc + I(tblack_cc^2) + wexpwhite_ct * tblack_cc + wexpwhite_ct * I(tblack_cc^2) + tot_black + thispanic + tot_latino + sus_total + frp + tot_enr + highschool_ccd + urban + south, vcov = ~ leaid + fips, data = suspensionfin2)
+
+# variable name
+dict = c(
+  "wexpwhite_ct" = "Explicit Bias",
+  "tblack_cc" = "Black teachers (%)",
+  "I(tblack_cc^2)" = "Black teachers squared",
+  "wexpwhite_ct:tblack_cc" = "Explicit Bias X Black teachers (%)",
+  "wexpwhite_ct:I(tblack_cc^2)" = "Explicit Bias X Black teachers squared",
+  "tot_black" = "Black students (%)",
+  "thispanic" = "Hispanic teachers (%)",
+  "tot_latino" = "Hispanic students (%)",
+  "gift_total" = "Suspended students (%)",
+  "frp" = "Free or reduced lunch (%)",
+  "tot_enr" = "Total students",
+  "highschool_ccd" = "High schools",
+  "urban" = "Urban schools",
+  "south" = "South",
+  "(intercept)" = "Constant"
+)
+
+f <- function(x) {format(round(x, 3), big.mark=",")}
+gm = list(
+  list("raw" = "r.squared", "clean" = "R^2", "fmt" = f),
+  list("raw" = "nobs", "clean" = "N", "fmt" = f))
+
+modelsummary(models = list(`model3.1`= model3_1,
+                           `model3.2`= model3_2, 
+                           `model3.3`= model3_3),
+             fmt = 3, 
+             estimate  = "{estimate} ({p.value}) {stars}",
+             statistic = NULL,
+             stars = T,
+             coef_map  = dict,
+             output = "markdown",
+             gof_map = gm,
+             notes = "Note: P values are reported in parentheses. Two-way clustered robust standard errors are used. The explicit bias and the percentage of Black teachers variables are mean-centered. +p < .10, *p < .05, **p < .01, ***p < .001",
+             title = 'Table 3: Percentage of Students Receiving Out-of-School Suspensions Who Are Black (Explicit Bias)')
+
+
+
+
+```
+
+## 6. Suspension - implicit bias: Descriptive Statistics
+
+```{r}
+#: column: page
+
+# for Model 4.1
+
+# grand mean centering 
+suspensionc3 <- suspension %>%
+  mutate(wiatwhite_m = mean(wiat_white),
+         wiatwhite_c = wiat_white - wiatwhite_m)
+
+model7 <- lm(sus_black_p ~ wiatwhite_c + tot_black + tot_latino + sus_total + 
+            frp + tot_enr + highschool_ccd + urban + south, data = suspensionc3)
+
+# dealing with outliers based on studentized residual and cook's distance 
+suspensionfin3 <- suspensionc3 %>% 
+  cbind(r = MASS::studres(model7)) %>% 
+  cbind(cooksd = cooks.distance(model7)) %>% 
+  filter(r>=-3 & r<=3 & cooksd <=(4/18895)) %>%
+  mutate(wiatwhite_mt = mean(wiat_white),
+         wiatwhite_ct = wiat_white - wiatwhite_mt)
+
+# discriptive statistics 
+suspensionfin3 %>%
+  dplyr::select(
+    sus_black_p, wiat_white, wiatwhite_ct, wiat_white, tot_black, 
+    tot_latino, sus_total, frp, tot_enr, highschool_ccd, urban, south
+  ) %>%
+  psych::describe() %>% 
+  dplyr::select(!vars & !trimmed & !mad & !range & !se) %>%
+  janitor::clean_names() %>% 
+  mutate(across(where(is.numeric), ~ round(., 3))) %>% 
+  kable(digits = 3, format.args = list(big.mark = ",")) 
+```
+
+```{r}
+#: column: page
+# for Model 4.2 & Model 4.3
+
+# grand mean centering 
+suspensionc4 <- suspension %>%
+  drop_na(tblack) %>% 
+  mutate(tblack_m = mean(tblack),
+         tblack_c = tblack - tblack_m, 
+         wiatwhite_m = mean(wiat_white),
+         wiatwhite_c = wiat_white - wiatwhite_m)
+
+model8 <- lm(sus_black_p ~ wiatwhite_c + tblack_c + I(tblack_c^2) + 
+             tot_black + thispanic + tot_latino + sus_total + frp + 
+             tot_enr + highschool_ccd + urban + south, data = suspensionc4,
+             na.action=na.exclude) 
+
+# dealing with outliers based on studentized residual and cook's distance 
+suspensionfin4 <- suspensionc4 %>% 
+  cbind(r = MASS::studres(model8)) %>% 
+  cbind(cooksd = cooks.distance(model8)) %>% 
+  filter(r>=-3 & r<=3 & cooksd <=(4/6677)) %>%
+  mutate(tblack_cm = mean(tblack),
+         tblack_cc = tblack - tblack_cm,
+         wiatwhite_mt = mean(wiat_white),
+         wiatwhite_ct = wiat_white - wiatwhite_mt)
+
+# discriptive statistics 
+suspensionfin4 %>%
+  dplyr::select(
+     sus_black_p, wiat_white, wiatwhite_ct, wiat_white, tot_black, tot_latino,
+     sus_total, frp, tot_enr, highschool_ccd, urban, south, tblack, thispanic
+  ) %>%
+  psych::describe() %>% 
+  dplyr::select(!vars & !trimmed & !mad & !range & !se) %>%
+  janitor::clean_names() %>% 
+  mutate(across(where(is.numeric), ~ round(., 3))) %>% 
+  kable(digits = 3, format.args = list(big.mark = ",")) 
+
+```
+
+## 6. Suspension - implicit bias: Table 4
+
+```{r results = "asis", echo = T}
+# first column
+model4_1 <- feols(sus_black_p ~ wiatwhite_ct + tot_black + tot_latino + sus_total + frp + tot_enr + highschool_ccd + urban + south, vcov = ~ leaid + fips, data = suspensionfin3)
+
+# second column
+model4_2 <- feols(sus_black_p ~ wiatwhite_ct + tblack_cc + I(tblack_cc^2) + tot_black + + thispanic + tot_latino + sus_total + frp + tot_enr + highschool_ccd + urban + south, vcov = ~ leaid + fips, data = suspensionfin4)
+
+# third column
+model4_3 <- feols(sus_black_p ~ wiatwhite_ct + tblack_cc + I(tblack_cc^2) + wiatwhite_ct * tblack_cc + wiatwhite_ct * I(tblack_cc^2) + tot_black + + thispanic + tot_latino + sus_total + frp + tot_enr + highschool_ccd + urban + south, vcov = ~ leaid + fips, data = suspensionfin4)
+
+# variable name
+dict = c(
+  "wiatwhite_ct" = "Implicit Bias",
+  "tblack_cc" = "Black teachers (%)",
+  "I(tblack_cc^2)" = "Black teachers squared",
+  "wiatwhite_ct:tblack_cc" = "Implicit Bias X Black teachers (%)",
+  "wiatwhite_ct:I(tblack_cc^2)" = "Implicit Bias X Black teachers squared",
+  "tot_black" = "Black students (%)",
+  "thispanic" = "Hispanic teachers (%)",
+  "tot_latino" = "Hispanic students (%)",
+  "sus_total" = "Gifted students (%)",
+  "frp" = "Free or reduced lunch (%)",
+  "tot_enr" = "Total students",
+  "highschool_ccd" = "High schools",
+  "urban" = "Urban schools",
+  "south" = "South",
+  "(intercept)" = "Constant"
+)
+
+f <- function(x) {format(round(x, 3), big.mark=",")}
+gm = list(
+  list("raw" = "r.squared", "clean" = "R^2", "fmt" = f),
+  list("raw" = "nobs", "clean" = "N", "fmt" = f))
+
+modelsummary(models = list(`model4.1`= model4_1,
+                           `model4.2`= model4_2, 
+                           `model4.3`= model4_3),
+             fmt = 3, 
+             estimate  = "{estimate} ({p.value}) {stars}",
+             statistic = NULL,
+             stars = T,
+             coef_map  = dict,
+             output = "markdown",
+             gof_map = gm,
+             notes = "Note: P values are reported in parentheses. Two-way clustered robust standard errors are used. The explicit bias and the percentage of Black teachers variables are mean-centered. + p < .10, * p < .05, ** p < .01, *** p < .001",
+             title = 'Table 4. Percentage of Students Receiving Out-of-School Suspensions Who Are Black (Implicit Bias)')
+
+```
+
+## 7. Figure 1
+
+```{r }
+#| code-fold: true
+#| warning: false
+#| error: false
+#| echo: true
+#| message: false
+#| output: false
+#| results: hide 
+
+
+
+# figure 1-A
+int_upper <- mean(giftedfin2$wexpwhite_ct)+sd(giftedfin2$wexpwhite_ct)
+int_lower <- mean(giftedfin2$wexpwhite_ct)-sd(giftedfin2$wexpwhite_ct)
+
+p1 <- plot_model(model1_3, type = "pred", ci.lvl = .95,
+           terms = c("tblack_cc [all]", glue("wexpwhite_ct[{int_lower},{int_upper}]"))) +
+  ds4psy::theme_ds4psy() + 
+  scale_x_continuous(lim = c(-20,95),
+    breaks = c(-10.86005, -0.86005, 9.13995, 19.13995, 29.13995, 39.13995, 49.13995, 59.13995, 69.13995, 79.13995, 89.13995),
+                     labels = c("0", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100")) + 
+  ylab("Black gifted students(%)") + 
+  xlab("Black teachers(%)") +
+  labs(color = "Interaction") +
+  ggtitle("Figure 1-A") +
+  scale_fill_manual(
+    values = c( "-0.0538681982230059" = "blue", 
+                "0.0538681982230059" = "red"),
+    labels = c( "-0.0538681982230059" = "Low Explicit Bias(-1SD)", 
+                "0.0538681982230059" = "High Explicit Bias(+1SD)"))+
+  scale_color_manual(
+    values = c( "-0.0538681982230059" = "blue", 
+                "0.0538681982230059" = "red"),
+    labels = c( "-0.0538681982230059" = "Low Explicit Bias(-1SD)", 
+                "0.0538681982230059" = "High Explicit Bias(+1SD)"))+
+  theme(legend.position = "bottom", legend.direction = "horizontal")
+
+xhist1 <- axis_canvas(p1, axis = "x") +
+  geom_histogram(data = giftedfin2, aes(x = tblack_cc), 
+                 color = "black",fill = "#FFFFCC") + 
+    scale_x_continuous(lim = c(-20,95),
+    breaks = c(-10.86005, -0.86005, 9.13995, 19.13995, 29.13995, 39.13995, 49.13995, 59.13995, 69.13995, 79.13995, 89.13995),
+                     labels = c("0", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100")) + 
+  labs(color = NULL, fill = NULL) + 
+  ds4psy::theme_ds4psy()
+
+combined_plot1 <- insert_xaxis_grob(p1, xhist1, position = "top")
+
+```
+
+```{r warning = F, error = F, echo=TRUE, results='hide'}
+#| code-fold: true
+#| warning: false
+#| error: false
+#| echo: true
+#| message: false
+#| output: false
+#| results: hide 
+
+# figure 1-B
+int_upper2 <- mean(suspensionfin2$wexpwhite_ct)+sd(suspensionfin2$wexpwhite_ct)
+int_lower2 <- mean(suspensionfin2$wexpwhite_ct)-sd(suspensionfin2$wexpwhite_ct)
+
+p2 <- plot_model(model3_3, type = "pred", ci.lvl = .95,
+           terms = c("tblack_cc [all]", glue("wexpwhite_ct[{int_lower2},{int_upper2}]"))) +
+  scale_x_continuous(lim = c(-20,95),
+                     breaks = c(-14.18238, -4.18238, 5.81762, 15.81762, 
+                                 25.81762, 35.81762, 45.81762, 
+                                 55.81762, 65.81762, 75.81762, 
+                                 85.81762),
+                     labels = c("0", "10", "20", "30", "40", 
+                                "50", "60", "70", "80", "90", "100")) + 
+  ylab("Black suspended students(%)") + 
+  xlab("Black teachers(%)") +
+  labs(color = "Interaction") +  
+  ggtitle("Figure 1-B") +
+  scale_fill_manual(
+    values = c( "-0.0557089200370501" = "blue", 
+                "0.0557089200370501" = "red"),
+    labels = c( "-0.0557089200370501" = "Low Explicit Bias(-1SD)", 
+                "0.0557089200370501" = "High Explicit Bias(+1SD)"))+
+  scale_color_manual(
+    values = c( "-0.0557089200370501" = "blue", 
+                "0.0557089200370501" = "red"),
+    labels = c( "-0.0557089200370501" = "Low Explicit Bias(-1SD)", 
+                "0.0557089200370501" = "High Explicit Bias(+1SD)"))+
+  ds4psy::theme_ds4psy() +
+  theme(legend.position = "bottom", legend.direction = "horizontal") 
+  
+
+xhist2 <- axis_canvas(p2, axis = "x") +
+  geom_histogram(data = suspensionfin2, aes(x = tblack_cc), 
+                 color = "black",fill = "#FFFFCC") + 
+  scale_x_continuous(lim = c(-20,95),
+                     breaks = c(-14.18238, -4.18238, 5.81762, 15.81762, 
+                                 25.81762, 35.81762, 45.81762, 
+                                 55.81762, 65.81762, 75.81762, 
+                                 85.81762),
+                     labels = c("0", "10", "20", "30", "40", 
+                                "50", "60", "70", "80", "90", "100")) +
+  labs(color = NULL, fill = NULL) + 
+  ds4psy::theme_ds4psy()
+
+combined_plot2 <- insert_xaxis_grob(p2, xhist2, position = "top")
+```
+
+```{r fig.width=13, fig.height=6}
+#| code-fold: true
+# completed figure
+
+pfin1 <- ggdraw(combined_plot1)
+pfin2 <- ggdraw(combined_plot2)
+pfin1 + pfin2
+
+```
+
+## 8. Alternative Analysis
+
+-   The way the analyst scale independent variables in multilevel models can significantly impact the variance of the intercept. This is a major issue because different scaling choices may lead to substantially different results and conclusions, potentially altering key findings of the analysis.
+
+-   Despite the fact that this article didn't exactly adopt multilevel modelling in the main analyses, due to the inconsistency in the levels of variables, how the analyst handles the scaling of each variable can significantly impact the interpretation of variables and the results.
+
+    -   The unit of analysis is "US Public School".
+
+    -   **Dependent variables** are defined at individual **school** level. According to the article, "the dependent variable indicates what percentage of students experiencing this outcome are black (p.666)."
+
+    -   **Some independent Variables** are defined at individual **school** level. "The other main independent variable is the proportion of black teachers in public schools (p.666)."
+
+    -   **Other independent(or moderating) variables** are defined at **county** level. According to the article, "both county-level explicit and implicit bias can be estimated by aggregating more than 1.2 million individual responses at the county level (p. 666)."
+
+-   The specification of the model is: $$ y_{kcdi} = \beta_0 + \beta_1 \cdot \text{Biases}_{\text{explicit, implicit}} + \beta_2 \cdot \text{Prop of Black Teachers} + $$ $$  \beta_3 \cdot (\text{Prop of Black Teachers})^2 + \beta_4 \cdot \text{Biases}_{\text{explicit, implicit}} \cdot \text{Prop of Black Teachers} $$ $$ + \beta_5 \cdot \text{Biases}_{\text{explicit, implicit}} \cdot (\text{Prop of Black Teachers})^2 + \boldsymbol{\beta} \cdot \text{Controls} + \gamma_c + \lambda_d + \varepsilon_i $$
+
+    -   The subscripts are *k* is for different dependent variables. *c* denotes county, *d* denotes district, and *i* denotes each schools. $\gamma_c$ is county-level fixed effect and $\lambda_d$ is district-level fixed effect. $\epsilon$ denotes school level error term
+
+    -   The interaction term is very similar to the case of cross-level interaction between each level. That is, the model captures how the county-level variables interact with school-level variables.
+
+-   According to Enders & Tofighi (2007), **grand mean-centering** can be used when the primary interest is in a Level 2 predictor and you want to control for Level 1 covariates. Grand mean-centering allows Level 1 variables to act as covariates and is appropriate for examining the influence of a Level 2 predictor while controlling for Level 1 variables. However, Grand mean-centering can potentially produce spurious cross-level interaction effects if not properly specified, as **it may confound within- and between-cluster effects in cross-level interactions**.
+
+-   Whereas **group mean-centering provides** an unbiased estimate of the pooled within-cluster regression coefficient and is preferable for examining cross-level interactions. It yields a relatively "pure" estimate of the cross-level interaction that is not confounded with potential Level 2 interactions.
+
+-   The authors of the Park & Favero (2023) adopted the **grand mean-centering** on proportion of black teachers and the county-level racial bias measures "to simplify interpretation of squared terms and interaction terms (p.667)."
+
+    -   The authors do not explicitly state which variables are assumed to be moderating variables; however, based on Figure 1, it appears that the explicit and implicit bias variables at level 2 are treated as moderators, while the proportion of Black teachers at level 1 is considered an independent variable. Therefore, from this perspective, the model seems to examine how level 2 variables moderate the relationships among level 1 variables. However, if the level 1 variables are grand mean-centered, it will estimate the weighted results of interactions between counties and between individual schools, which may confound interpretation.
+
+-   Therefore, in this report, while it is true that grand mean-centering is the effective option for intuitive interpretation and helps mitigate multicollinearity, the analysis aims to examine how the estimates change under an alternative specification. Given that the moderating variables are defined at the county level and county-level fixed effects are considered in the model, **county-level mean-centering** was performed on the independent variable 'the proportion of Black teachers.' This approach helps control for differences in the independent variable arising from inter-county variations and allows for observation of how the interacting relationships change.
+
+### 8-1. Percentage of Students in Gifted Program
+
+```{r}
+#| code-fold: true
+# Percentage of Students in Gifted Program Who Are Black 
+
+# Grand Mean Centering vs. Group Mean Centering 
+
+# 379 County and 1003 Districts 
+print(glue("# of County: {giftedc2$fips %>% unique() %>% length()},
+           # of Districts: {giftedc2$leaid %>% unique() %>% length()}"))
+
+# Create new variable of 'Black teachers (%) (tblack_cm2)' by county-level mean centering 
+giftedfinadd <- giftedc2 %>% 
+  cbind(r = MASS::studres(model2)) %>% 
+  cbind(cooksd = cooks.distance(model2)) %>% 
+  filter(r>=-3 & r<=3 & cooksd <=(4/7431)) %>%
+  mutate(tblack_cm = mean(tblack),
+         tblack_cc = tblack - tblack_cm,
+         wexpwhite_mt = mean(wexp_white),
+         wexpwhite_ct = wexp_white - wexpwhite_mt) %>%
+  group_by(fips) %>% 
+  mutate(tblack_cm2 = mean(tblack),
+         tblack_cc2 = tblack - tblack_cm2) %>% 
+  ungroup()
+
+# Model 1.3 (Original with Grand Mean Centering)
+modeladd1 <- feols(gift_black_p ~ wexpwhite_ct + tblack_cc + I(tblack_cc^2) + wexpwhite_ct * tblack_cc + wexpwhite_ct * I(tblack_cc^2) + tot_black + + thispanic + tot_latino + gift_total + frp + tot_enr + highschool_ccd + urban + south, vcov = ~ leaid + fips, data = giftedfinadd)
+# Model 1.3 (County-levle Mean Centering)
+modeladd2 <- feols(gift_black_p ~ wexpwhite_ct + tblack_cc2 + I(tblack_cc2^2) + wexpwhite_ct * tblack_cc2 + wexpwhite_ct * I(tblack_cc2^2) + tot_black + + thispanic + tot_latino + gift_total + frp + tot_enr + highschool_ccd + urban + south, vcov = ~ leaid + fips, data = giftedfinadd)
+
+
+# variable name
+dict = c(
+  "wexpwhite_ct" = "Explicit Bias",
+  "tblack_cc" = "Black teachers (%) (grand)",
+  "I(tblack_cc^2)" = "Black teachers (grand) squared",
+  "wexpwhite_ct:tblack_cc" = "Implicit Bias X Black teachers (%) (grand)",
+  "wexpwhite_ct:I(tblack_cc^2)" = "Implicit Bias X Black teachers  (grand) squared",
+  "tblack_cc2" = "Black teachers (%) (county)",
+  "I(tblack_cc2^2)" = "Black teachers (county) squared",
+  "wexpwhite_ct:tblack_cc2" = "Implicit Bias X Black teachers (%) (county)",
+  "wexpwhite_ct:I(tblack_cc2^2)" = "Implicit Bias X Black teachers (county) squared",
+  "tot_black" = "Black students (%)",
+  "thispanic" = "Hispanic teachers (%)",
+  "tot_latino" = "Hispanic students (%)",
+  "gift_total" = "Gifted students (%)",
+  "frp" = "Free or reduced lunch (%)",
+  "tot_enr" = "Total students",
+  "highschool_ccd" = "High schools",
+  "urban" = "Urban schools",
+  "south" = "South",
+  "(intercept)" = "Constant"
+)
+
+f <- function(x) {format(round(x, 3), big.mark=",")}
+gm = list(
+  list("raw" = "r.squared", "clean" = "R^2", "fmt" = f),
+  list("raw" = "nobs", "clean" = "N", "fmt" = f))
+
+modelsummary(models = list(`model1.3 (original with grand mean-centering`= modeladd1,
+                           `model1.3 (county-level mean-centering)`= modeladd2),
+             fmt = 3, 
+             estimate  = "{estimate} ({p.value}) {stars}",
+             statistic = NULL,
+             stars = T,
+             coef_map  = dict,
+             output = "markdown",
+             gof_map = gm,
+             notes = "Note: P values are reported in parentheses. Two-way clustered robust standard errors are used. The explicit bias is grand mean-centered. The percentage of Black teachers variables are grand mean-centered in original model and county-level mean centered in alternative model. + p < .10, * p < .05, ** p < .01, *** p < .001")
+
+```
+
+### 8-2. Percentage of Students Receiving Out-of-School Suspensions
+
+```{r}
+#| code-fold: true
+# Suspension 
+
+# Grand Mean Centering vs. Group Mean Centering 
+
+# 379 County and 1003 Districts 
+print(glue("# of County: {suspensionc2$fips %>% unique() %>% length()},
+           # of Districts: {suspensionc2$leaid %>% unique() %>% length()}"))
+
+# Create new variable of 'Black teachers (%) (tblack_cm2)' by county-level mean centering 
+suspensionfinadd <- suspensionc2 %>% 
+  cbind(r = MASS::studres(model6)) %>% 
+  cbind(cooksd = cooks.distance(model6)) %>% 
+  filter(r>=-3 & r<=3 & cooksd <=(4/6677)) %>%
+  mutate(tblack_cm = mean(tblack),
+         tblack_cc = tblack - tblack_cm,
+         wexpwhite_mt = mean(wexp_white),
+         wexpwhite_ct = wexp_white - wexpwhite_mt) %>%
+  group_by(fips) %>% 
+  mutate(tblack_cm2 = mean(tblack),
+         tblack_cc2 = tblack - tblack_cm2) %>% 
+  ungroup()
+
+# Model 3.3 (Original with Grand Mean Centering)
+modeladd3 <- feols(sus_black_p ~ wexpwhite_ct + tblack_cc + I(tblack_cc^2) + wexpwhite_ct * tblack_cc + wexpwhite_ct * I(tblack_cc^2) + tot_black + + thispanic + tot_latino + sus_total + frp + tot_enr + highschool_ccd + urban + south, vcov = ~ leaid + fips, data = suspensionfinadd)
+# Model 3.3 (County-levle Mean Centering)
+modeladd4 <- feols(sus_black_p ~ wexpwhite_ct + tblack_cc2 + I(tblack_cc2^2) + wexpwhite_ct * tblack_cc2 + wexpwhite_ct * I(tblack_cc2^2) + tot_black + + thispanic + tot_latino + sus_total + frp + tot_enr + highschool_ccd + urban + south, vcov = ~ leaid + fips, data = suspensionfinadd)
+
+
+# variable name
+dict = c(
+  "wexpwhite_ct" = "Explicit Bias",
+  "tblack_cc" = "Black teachers (%) (grand)",
+  "I(tblack_cc^2)" = "Black teachers (grand) squared",
+  "wexpwhite_ct:tblack_cc" = "Implicit Bias X Black teachers (%) (grand)",
+  "wexpwhite_ct:I(tblack_cc^2)" = "Implicit Bias X Black teachers  (grand) squared",
+  "tblack_cc2" = "Black teachers (%) (county)",
+  "I(tblack_cc2^2)" = "Black teachers (county) squared",
+  "wexpwhite_ct:tblack_cc2" = "Implicit Bias X Black teachers (%) (county)",
+  "wexpwhite_ct:I(tblack_cc2^2)" = "Implicit Bias X Black teachers (county) squared",
+  "tot_black" = "Black students (%)",
+  "thispanic" = "Hispanic teachers (%)",
+  "tot_latino" = "Hispanic students (%)",
+  "sus_total" = "Suspended students (%)",
+  "frp" = "Free or reduced lunch (%)",
+  "tot_enr" = "Total students",
+  "highschool_ccd" = "High schools",
+  "urban" = "Urban schools",
+  "south" = "South",
+  "(intercept)" = "Constant"
+)
+
+f <- function(x) {format(round(x, 3), big.mark=",")}
+gm = list(
+  list("raw" = "r.squared", "clean" = "R^2", "fmt" = f),
+  list("raw" = "nobs", "clean" = "N", "fmt" = f))
+
+modelsummary(models = list(`model3.3 (original with grand mean-centering`= modeladd3,
+                           `model3.3 (county-level mean-centering)`= modeladd4),
+             fmt = 3, 
+             estimate  = "{estimate} ({p.value}) {stars}",
+             statistic = NULL,
+             stars = T,
+             coef_map  = dict,
+             output = "markdown",
+             gof_map = gm,
+             notes = "Note: P values are reported in parentheses. Two-way clustered robust standard errors are used. The explicit bias is grand mean-centered. The percentage of Black teachers variables are grand mean-centered in original model and county-level mean centered in alternative model. + p < .10, * p < .05, ** p < .01, *** p < .001")
+
+```
+
+### 8-3. Interpretation
+- In the regression analysis of the percentage of students in gifted programs (**Section 8-1**), the alternative analysis contradicts original results and the paper's conclusion that explicit bias would negatively affect the impact of passive representation
+    - The original model using grand mean-centering—which accounts for the changes in the proportion of Black teachers relative to the overall mean on active representation—showed significant negative regression coefficients for the interaction term of implicit bias and the quadratic term of the proportion of Black teachers. 
+    - In contrast, when centering by controlling for the average proportion of Black teachers in each county, the same term exhibited significant positive regression coefficients at the 10% significance level. 
+
+- In the regression analysis of the percentage of students in out-of-school suspensions (**Section 8-2**), the alternative analysis also contradicts original results and the paper's conclusion that explicit bias would negatively affect the impact of passive representation
+    - The original model using grand mean-centering—which accounts for the changes in the proportion of Black teachers relative to the overall mean on active representation—showed significant negative regression coefficients for the interaction term of implicit bias and the proportion of Black teachers. 
+    - In contrast, when centering by controlling for the average proportion of Black teachers in each county, the same term was insignificantly estimated. 
+    
+## 9. Conclusion
+- From the alternative analysis, it has been confirmed that the results of estimation in regression analysis can vary depending on how scaling is managed when the units of analysis for predictors (including independent and moderating variables) and dependent variables differ. 
+    - In Park & Favero (2023), grand-mean centering increases estimation stability, particularly when high correlations between variables lead to multicollinearity issues. However, this approach has limitations in distinguishing whether active representation results from a higher proportion of teachers in a particular school or simply from the average proportion of black teachers in the specific county to which the school belongs.
+   - In other words, determining whether estimation results change due to variations in teacher proportions, or arise from interactions with already high or low levels of Black teacher proportions in the county, should be taken with caution.
+- The change in results under an alternative specification using group-mean centering illustrate the need for careful analysis.
+  - When performing mean-centering, it should be noted that the results can differ based on whether the analysis aims (1) to control level-1 variables to examine the influence of level-2 variables or (2) to investigate the moderating effects of level-2 variables on within-cluster relationships through cross-level interactions.
+  - For future analyses, the unit of analysis should be carefully considered, keeping in mind the potential for ecological fallacy or reductionist fallacy.
+
+## 10. Citation
+
+-   Enders, C. K., & Tofighi, D. (2007). Centering predictor variables in cross-sectional multilevel models: A new look at an old issue. Psychological Methods, 12(2), 121–138. https://doi.org/10.1037/1082-989X.12.2.121
 :::

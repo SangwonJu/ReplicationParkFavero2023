@@ -1,4 +1,0 @@
-"0","# loading the data "
-"0","rm(list=ls())"
-"0","gifted <- read.dta13(""./Gifted_Program.dta"")"
-"0","suspension <- read.dta13(""./Gifted_Program.dta"")"
