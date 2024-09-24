@@ -73,7 +73,7 @@ suspension <- read.dta13("./Suspension.dta")
 ## 3. Gifted Programs - explicit bias: discriptive statistics
 
 ```{r}
-#: column: page
+#| column: page
 
 # for Model 1.1
 
@@ -107,7 +107,8 @@ giftedfin %>%
 ```
 
 ```{r}
-#: column: page
+#| column: page
+
 # for Model 1.2 & Model 1.3
 
 # grand mean centering 
@@ -204,7 +205,7 @@ modelsummary(models = list(`model1.1`= model1_1,
 ## 4. Gifted Programs - implicit bias: Descriptive Statistics
 
 ```{r}
-#: column: page
+#| column: page
 
 # for Model 2.1
 
@@ -238,7 +239,7 @@ giftedfin3 %>%
 ```
 
 ```{r}
-#: column: page
+#| column: page
 # for Model 2.2 & Model 2.3
 
 # grand mean centering 
@@ -332,7 +333,7 @@ modelsummary(models = list(`model2.1`= model2_1,
 ## 5. Suspension - explicit bias: discriptive statistics
 
 ```{r}
-#: column: page
+#| column: page
 
 # for Model 3.1
 
@@ -366,7 +367,7 @@ suspensionfin %>%
 ```
 
 ```{r}
-#: column: page
+#| column: page
 # for Model 3.2 & Model 3.3
 
 # grand mean centering 
@@ -463,7 +464,7 @@ modelsummary(models = list(`model3.1`= model3_1,
 ## 6. Suspension - implicit bias: Descriptive Statistics
 
 ```{r}
-#: column: page
+#| column: page
 
 # for Model 4.1
 
@@ -497,7 +498,7 @@ suspensionfin3 %>%
 ```
 
 ```{r}
-#: column: page
+#| column: page
 # for Model 4.2 & Model 4.3
 
 # grand mean centering 
@@ -608,7 +609,7 @@ int_lower <- mean(giftedfin2$wexpwhite_ct)-sd(giftedfin2$wexpwhite_ct)
 p1 <- plot_model(model1_3, type = "pred", ci.lvl = .95,
            terms = c("tblack_cc [all]", glue("wexpwhite_ct[{int_lower},{int_upper}]"))) +
   ds4psy::theme_ds4psy() + 
-  scale_x_continuous(lim = c(-20,95),
+  scale_x_continuous(lim = c(-11,90),
     breaks = c(-10.86005, -0.86005, 9.13995, 19.13995, 29.13995, 39.13995, 49.13995, 59.13995, 69.13995, 79.13995, 89.13995),
                      labels = c("0", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100")) + 
   ylab("Black gifted students(%)") + 
@@ -630,7 +631,7 @@ p1 <- plot_model(model1_3, type = "pred", ci.lvl = .95,
 xhist1 <- axis_canvas(p1, axis = "x") +
   geom_histogram(data = giftedfin2, aes(x = tblack_cc), 
                  color = "black",fill = "#FFFFCC") + 
-    scale_x_continuous(lim = c(-20,95),
+    scale_x_continuous(lim = c(-11,90),
     breaks = c(-10.86005, -0.86005, 9.13995, 19.13995, 29.13995, 39.13995, 49.13995, 59.13995, 69.13995, 79.13995, 89.13995),
                      labels = c("0", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100")) + 
   labs(color = NULL, fill = NULL) + 
@@ -640,7 +641,7 @@ combined_plot1 <- insert_xaxis_grob(p1, xhist1, position = "top")
 
 ```
 
-```{r warning = F, error = F, echo=TRUE, results='hide'}
+```{r}
 #| code-fold: true
 #| warning: false
 #| error: false
@@ -655,7 +656,7 @@ int_lower2 <- mean(suspensionfin2$wexpwhite_ct)-sd(suspensionfin2$wexpwhite_ct)
 
 p2 <- plot_model(model3_3, type = "pred", ci.lvl = .95,
            terms = c("tblack_cc [all]", glue("wexpwhite_ct[{int_lower2},{int_upper2}]"))) +
-  scale_x_continuous(lim = c(-20,95),
+  scale_x_continuous(lim = c(-15,86),
                      breaks = c(-14.18238, -4.18238, 5.81762, 15.81762, 
                                  25.81762, 35.81762, 45.81762, 
                                  55.81762, 65.81762, 75.81762, 
@@ -683,7 +684,7 @@ p2 <- plot_model(model3_3, type = "pred", ci.lvl = .95,
 xhist2 <- axis_canvas(p2, axis = "x") +
   geom_histogram(data = suspensionfin2, aes(x = tblack_cc), 
                  color = "black",fill = "#FFFFCC") + 
-  scale_x_continuous(lim = c(-20,95),
+  scale_x_continuous(lim = c(-15,86),
                      breaks = c(-14.18238, -4.18238, 5.81762, 15.81762, 
                                  25.81762, 35.81762, 45.81762, 
                                  55.81762, 65.81762, 75.81762, 
@@ -698,6 +699,7 @@ combined_plot2 <- insert_xaxis_grob(p2, xhist2, position = "top")
 
 ```{r fig.width=13, fig.height=6}
 #| code-fold: true
+#| column: screen-inset
 # completed figure
 
 pfin1 <- ggdraw(combined_plot1)
@@ -726,7 +728,7 @@ pfin1 + pfin2
 
     -   The interaction term is very similar to the case of cross-level interaction between each level. That is, the model captures how the county-level variables interact with school-level variables.
 
--   According to Enders & Tofighi (2007), **grand mean-centering** can be used when the primary interest is in a Level 2 predictor and you want to control for Level 1 covariates. Grand mean-centering allows Level 1 variables to act as covariates and is appropriate for examining the influence of a Level 2 predictor while controlling for Level 1 variables. However, Grand mean-centering can potentially produce spurious cross-level interaction effects if not properly specified, as **it may confound within- and between-cluster effects in cross-level interactions**.
+-   According to Enders & Tofighi (2007), **grand mean-centering** can be used when the primary interest is in a Level 2 predictor and you want to control for Level 1 covariates. Grand mean-centering allows Level 1 variables to act as covariates and is appropriate for examining the influence of a Level 2 predictor while controlling for Level 1 variables. However, grand mean-centering can potentially produce spurious cross-level interaction effects if not properly specified, as **it may confound within- and between-cluster effects in cross-level interactions**.
 
 -   Whereas **group mean-centering provides** an unbiased estimate of the pooled within-cluster regression coefficient and is preferable for examining cross-level interactions. It yields a relatively "pure" estimate of the cross-level interaction that is not confounded with potential Level 2 interactions.
 
@@ -734,12 +736,13 @@ pfin1 + pfin2
 
     -   The authors do not explicitly state which variables are assumed to be moderating variables; however, based on Figure 1, it appears that the explicit and implicit bias variables at level 2 are treated as moderators, while the proportion of Black teachers at level 1 is considered an independent variable. Therefore, from this perspective, the model seems to examine how level 2 variables moderate the relationships among level 1 variables. However, if the level 1 variables are grand mean-centered, it will estimate the weighted results of interactions between counties and between individual schools, which may confound interpretation.
 
--   Therefore, in this report, while it is true that grand mean-centering is the effective option for intuitive interpretation and helps mitigate multicollinearity, the analysis aims to examine how the estimates change under an alternative specification. Given that the moderating variables are defined at the county level and county-level fixed effects are considered in the model, **county-level mean-centering** was performed on the independent variable 'the proportion of Black teachers.' This approach helps control for differences in the independent variable arising from inter-county variations and allows for observation of how the interacting relationships change.
+-   Therefore, in this report, while it is true that grand mean-centering is the effective option for intuitive interpretation and helps mitigate multicollinearity, the analysis aims to examine how the estimates change under an alternative specification of the independent variable 'the proportion of Black teachers.' **First**, an alternative specification **without mean-centering** was estimated to compare the influence of mean-centering. **Second**, given that the moderating variables are defined at the county level and county-level fixed effects are considered in the model, **county-level mean-centering** was performed. This approach helps control for differences in the independent variable arising from inter-county variations and allows for observation of how the interacting relationships change.
 
 ### 8-1. Percentage of Students in Gifted Program
 
 ```{r}
 #| code-fold: true
+
 # Percentage of Students in Gifted Program Who Are Black 
 
 # Grand Mean Centering vs. Group Mean Centering 
@@ -762,23 +765,31 @@ giftedfinadd <- giftedc2 %>%
          tblack_cc2 = tblack - tblack_cm2) %>% 
   ungroup()
 
-# Model 1.3 (Original with Grand Mean Centering)
-modeladd1 <- feols(gift_black_p ~ wexpwhite_ct + tblack_cc + I(tblack_cc^2) + wexpwhite_ct * tblack_cc + wexpwhite_ct * I(tblack_cc^2) + tot_black + + thispanic + tot_latino + gift_total + frp + tot_enr + highschool_ccd + urban + south, vcov = ~ leaid + fips, data = giftedfinadd)
-# Model 1.3 (County-levle Mean Centering)
-modeladd2 <- feols(gift_black_p ~ wexpwhite_ct + tblack_cc2 + I(tblack_cc2^2) + wexpwhite_ct * tblack_cc2 + wexpwhite_ct * I(tblack_cc2^2) + tot_black + + thispanic + tot_latino + gift_total + frp + tot_enr + highschool_ccd + urban + south, vcov = ~ leaid + fips, data = giftedfinadd)
+# Model 1.3 (w/o Mean Centering)
+modeladd1 <- feols(gift_black_p ~ wexpwhite_ct + tblack + I(tblack^2) + wexpwhite_ct * tblack + wexpwhite_ct * I(tblack^2) + tot_black + + thispanic + tot_latino + gift_total + frp + tot_enr + highschool_ccd + urban + south, vcov = ~ leaid + fips, data = giftedfinadd)
+
+# Model 1.3 (w/ Grand Mean Centering)
+modeladd2 <- feols(gift_black_p ~ wexpwhite_ct + tblack_cc + I(tblack_cc^2) + wexpwhite_ct * tblack_cc + wexpwhite_ct * I(tblack_cc^2) + tot_black + + thispanic + tot_latino + gift_total + frp + tot_enr + highschool_ccd + urban + south, vcov = ~ leaid + fips, data = giftedfinadd)
+
+# Model 1.3 (w/ County-level Mean centering)
+modeladd3 <- feols(gift_black_p ~ wexpwhite_ct + tblack_cc2 + I(tblack_cc2^2) + wexpwhite_ct * tblack_cc2 + wexpwhite_ct * I(tblack_cc2^2) + tot_black + + thispanic + tot_latino + gift_total + frp + tot_enr + highschool_ccd + urban + south, vcov = ~ leaid + fips, data = giftedfinadd)
 
 
 # variable name
 dict = c(
   "wexpwhite_ct" = "Explicit Bias",
+  "tblack" = "Black teachers (%)",
+  "I(tblack^2)" = "Black teachers squared",
+  "wexpwhite_ct:tblack" = "Explicit Bias X Black teachers (%)",
+  "wexpwhite_ct:I(tblack^2)" = "Explicit Bias X Black teachers squared",
   "tblack_cc" = "Black teachers (%) (grand)",
   "I(tblack_cc^2)" = "Black teachers (grand) squared",
-  "wexpwhite_ct:tblack_cc" = "Implicit Bias X Black teachers (%) (grand)",
-  "wexpwhite_ct:I(tblack_cc^2)" = "Implicit Bias X Black teachers  (grand) squared",
+  "wexpwhite_ct:tblack_cc" = "Explicit Bias X Black teachers (%) (grand)",
+  "wexpwhite_ct:I(tblack_cc^2)" = "Explicit Bias X Black teachers  (grand) squared",
   "tblack_cc2" = "Black teachers (%) (county)",
   "I(tblack_cc2^2)" = "Black teachers (county) squared",
-  "wexpwhite_ct:tblack_cc2" = "Implicit Bias X Black teachers (%) (county)",
-  "wexpwhite_ct:I(tblack_cc2^2)" = "Implicit Bias X Black teachers (county) squared",
+  "wexpwhite_ct:tblack_cc2" = "Explicit Bias X Black teachers (%) (county)",
+  "wexpwhite_ct:I(tblack_cc2^2)" = "Explicit Bias X Black teachers (county) squared",
   "tot_black" = "Black students (%)",
   "thispanic" = "Hispanic teachers (%)",
   "tot_latino" = "Hispanic students (%)",
@@ -796,8 +807,10 @@ gm = list(
   list("raw" = "r.squared", "clean" = "R^2", "fmt" = f),
   list("raw" = "nobs", "clean" = "N", "fmt" = f))
 
-modelsummary(models = list(`model1.3 (original with grand mean-centering`= modeladd1,
-                           `model1.3 (county-level mean-centering)`= modeladd2),
+modelsummary(models = list(
+  `model1.3 (w/o mean-centering)`= modeladd1,
+  `model1.3 (w/ grand mean-centering)`= modeladd2,
+  `model1.3 (w/ county-level mean-centering)`= modeladd3),
              fmt = 3, 
              estimate  = "{estimate} ({p.value}) {stars}",
              statistic = NULL,
@@ -805,7 +818,7 @@ modelsummary(models = list(`model1.3 (original with grand mean-centering`= model
              coef_map  = dict,
              output = "markdown",
              gof_map = gm,
-             notes = "Note: P values are reported in parentheses. Two-way clustered robust standard errors are used. The explicit bias is grand mean-centered. The percentage of Black teachers variables are grand mean-centered in original model and county-level mean centered in alternative model. + p < .10, * p < .05, ** p < .01, *** p < .001")
+             notes = "Note: P values are reported in parentheses. Two-way clustered robust standard errors are used. The explicit bias is grand mean-centered. Each row used distinct specification on the percentage of Black teachers variables. First column estimated without any mean-centering. Second column estimated with grand mean-centered as in original paper. Third column estimated with county-level mean-centering. + p < .10, * p < .05, ** p < .01, *** p < .001")
 
 ```
 
@@ -835,23 +848,31 @@ suspensionfinadd <- suspensionc2 %>%
          tblack_cc2 = tblack - tblack_cm2) %>% 
   ungroup()
 
-# Model 3.3 (Original with Grand Mean Centering)
-modeladd3 <- feols(sus_black_p ~ wexpwhite_ct + tblack_cc + I(tblack_cc^2) + wexpwhite_ct * tblack_cc + wexpwhite_ct * I(tblack_cc^2) + tot_black + + thispanic + tot_latino + sus_total + frp + tot_enr + highschool_ccd + urban + south, vcov = ~ leaid + fips, data = suspensionfinadd)
-# Model 3.3 (County-levle Mean Centering)
-modeladd4 <- feols(sus_black_p ~ wexpwhite_ct + tblack_cc2 + I(tblack_cc2^2) + wexpwhite_ct * tblack_cc2 + wexpwhite_ct * I(tblack_cc2^2) + tot_black + + thispanic + tot_latino + sus_total + frp + tot_enr + highschool_ccd + urban + south, vcov = ~ leaid + fips, data = suspensionfinadd)
+# Model 3.3 (w/o Mean Centering)
+modeladd4 <- feols(sus_black_p ~ wexpwhite_ct + tblack + I(tblack^2) + wexpwhite_ct * tblack + wexpwhite_ct * I(tblack^2) + tot_black + + thispanic + tot_latino + sus_total + frp + tot_enr + highschool_ccd + urban + south, vcov = ~ leaid + fips, data = suspensionfinadd)
+
+# Model 3.3 (w/ Grand Mean Centering)
+modeladd5 <- feols(sus_black_p ~ wexpwhite_ct + tblack_cc + I(tblack_cc^2) + wexpwhite_ct * tblack_cc + wexpwhite_ct * I(tblack_cc^2) + tot_black + + thispanic + tot_latino + sus_total + frp + tot_enr + highschool_ccd + urban + south, vcov = ~ leaid + fips, data = suspensionfinadd)
+
+# Model 3.3 (w/ County-level Mean Centering)
+modeladd6 <- feols(sus_black_p ~ wexpwhite_ct + tblack_cc2 + I(tblack_cc2^2) + wexpwhite_ct * tblack_cc2 + wexpwhite_ct * I(tblack_cc2^2) + tot_black + + thispanic + tot_latino + sus_total + frp + tot_enr + highschool_ccd + urban + south, vcov = ~ leaid + fips, data = suspensionfinadd)
 
 
 # variable name
 dict = c(
   "wexpwhite_ct" = "Explicit Bias",
+  "tblack" = "Black teachers (%)",
+  "I(tblack^2)" = "Black teachers squared",
+  "wexpwhite_ct:tblack" = "Explicit Bias X Black teachers (%)",
+  "wexpwhite_ct:I(tblack^2)" = "Explicit Bias X Black teachers squared",
   "tblack_cc" = "Black teachers (%) (grand)",
   "I(tblack_cc^2)" = "Black teachers (grand) squared",
-  "wexpwhite_ct:tblack_cc" = "Implicit Bias X Black teachers (%) (grand)",
-  "wexpwhite_ct:I(tblack_cc^2)" = "Implicit Bias X Black teachers  (grand) squared",
+  "wexpwhite_ct:tblack_cc" = "Explicit Bias X Black teachers (%) (grand)",
+  "wexpwhite_ct:I(tblack_cc^2)" = "Explicit Bias X Black teachers  (grand) squared",
   "tblack_cc2" = "Black teachers (%) (county)",
   "I(tblack_cc2^2)" = "Black teachers (county) squared",
-  "wexpwhite_ct:tblack_cc2" = "Implicit Bias X Black teachers (%) (county)",
-  "wexpwhite_ct:I(tblack_cc2^2)" = "Implicit Bias X Black teachers (county) squared",
+  "wexpwhite_ct:tblack_cc2" = "Explicit Bias X Black teachers (%) (county)",
+  "wexpwhite_ct:I(tblack_cc2^2)" = "Explicit Bias X Black teachers (county) squared",
   "tot_black" = "Black students (%)",
   "thispanic" = "Hispanic teachers (%)",
   "tot_latino" = "Hispanic students (%)",
@@ -869,8 +890,10 @@ gm = list(
   list("raw" = "r.squared", "clean" = "R^2", "fmt" = f),
   list("raw" = "nobs", "clean" = "N", "fmt" = f))
 
-modelsummary(models = list(`model3.3 (original with grand mean-centering`= modeladd3,
-                           `model3.3 (county-level mean-centering)`= modeladd4),
+modelsummary(models = list(
+  `model3.3 (w/o mean-centering)`= modeladd4,
+  `model3.3 (w/ grand mean-centering)`= modeladd5,
+  `model3.3 (w/ county-level mean-centering)`= modeladd6),
              fmt = 3, 
              estimate  = "{estimate} ({p.value}) {stars}",
              statistic = NULL,
@@ -878,26 +901,218 @@ modelsummary(models = list(`model3.3 (original with grand mean-centering`= model
              coef_map  = dict,
              output = "markdown",
              gof_map = gm,
-             notes = "Note: P values are reported in parentheses. Two-way clustered robust standard errors are used. The explicit bias is grand mean-centered. The percentage of Black teachers variables are grand mean-centered in original model and county-level mean centered in alternative model. + p < .10, * p < .05, ** p < .01, *** p < .001")
+             notes = "Note: P values are reported in parentheses. Two-way clustered robust standard errors are used. The explicit bias is grand mean-centered. Each row used distinct specification on the percentage of Black teachers variables. First column estimated without any mean-centering. Second column estimated with grand mean-centered as in original paper. Third column estimated with county-level mean-centering. + p < .10, * p < .05, ** p < .01, *** p < .001")
 
 ```
 
-### 8-3. Interpretation
-- In the regression analysis of the percentage of students in gifted programs (**Section 8-1**), the alternative analysis contradicts original results and the paper's conclusion that explicit bias would negatively affect the impact of passive representation
-    - The original model using grand mean-centering—which accounts for the changes in the proportion of Black teachers relative to the overall mean on active representation—showed significant negative regression coefficients for the interaction term of implicit bias and the quadratic term of the proportion of Black teachers. 
-    - In contrast, when centering by controlling for the average proportion of Black teachers in each county, the same term exhibited significant positive regression coefficients at the 10% significance level. 
+### 8-3. Visualization of estimates
 
-- In the regression analysis of the percentage of students in out-of-school suspensions (**Section 8-2**), the alternative analysis also contradicts original results and the paper's conclusion that explicit bias would negatively affect the impact of passive representation
-    - The original model using grand mean-centering—which accounts for the changes in the proportion of Black teachers relative to the overall mean on active representation—showed significant negative regression coefficients for the interaction term of implicit bias and the proportion of Black teachers. 
-    - In contrast, when centering by controlling for the average proportion of Black teachers in each county, the same term was insignificantly estimated. 
-    
+#### Visualization of Gifted Programs
+
+```{r}
+#| code-fold: true
+#| warning: false
+#| error: false
+#| echo: true
+#| message: false
+#| output: false
+#| results: hide 
+
+# model 1.3 (w/o mean centering)
+p3 <- plot_model(modeladd1, type = "pred", ci.lvl = .95,
+           terms = c("tblack [all]", glue("wexpwhite_ct[{int_lower},{int_upper}]"))) +
+  ds4psy::theme_ds4psy() + 
+  scale_x_continuous(lim = c(0,100),
+    breaks = seq(0,100,10)) + 
+  ylab("Black gifted students(%)") + 
+  xlab("Black teachers(%)") +
+  labs(color = "Interaction") +
+  ggtitle("Figure 1-A w/o mean-centering") +
+  scale_fill_manual(
+    values = c( "-0.0538681982230059" = "blue", 
+                "0.0538681982230059" = "red"),
+    labels = c( "-0.0538681982230059" = "Low Explicit Bias(-1SD)", 
+                "0.0538681982230059" = "High Explicit Bias(+1SD)"))+
+  scale_color_manual(
+    values = c( "-0.0538681982230059" = "blue", 
+                "0.0538681982230059" = "red"),
+    labels = c( "-0.0538681982230059" = "Low Explicit Bias(-1SD)", 
+                "0.0538681982230059" = "High Explicit Bias(+1SD)"))+
+  theme(legend.position = "bottom", legend.direction = "horizontal")
+
+xhist3 <- axis_canvas(p1, axis = "x") +
+  geom_histogram(data = giftedfinadd, aes(x = tblack), 
+                 color = "black",fill = "#FFFFCC") + 
+  scale_x_continuous(lim = c(0,100),
+    breaks = seq(0,100,10)) + 
+  labs(color = NULL, fill = NULL) + 
+  ds4psy::theme_ds4psy()
+
+combined_plot3 <- insert_xaxis_grob(p3, xhist3, position = "top")
+
+# model 1.3 (w/ county level mean centering)
+p4 <- plot_model(modeladd3, type = "pred", ci.lvl = .95,
+           terms = c("tblack_cc2 [all]", glue("wexpwhite_ct[{int_lower},{int_upper}]"))) +
+  ds4psy::theme_ds4psy() + 
+  scale_x_continuous(lim = c(-50,70),
+                     breaks = seq(-70,70,10)) +
+  ylab("Black gifted students(%)") + 
+  xlab("Black teachers (relative to county-means) (%)") +
+  labs(color = "Interaction") +
+  ggtitle("Figure 1-A w/ county-level mean-centering") +
+  scale_fill_manual(
+    values = c( "-0.0538681982230059" = "blue", 
+                "0.0538681982230059" = "red"),
+    labels = c( "-0.0538681982230059" = "Low Explicit Bias(-1SD)", 
+                "0.0538681982230059" = "High Explicit Bias(+1SD)"))+
+  scale_color_manual(
+    values = c( "-0.0538681982230059" = "blue", 
+                "0.0538681982230059" = "red"),
+    labels = c( "-0.0538681982230059" = "Low Explicit Bias(-1SD)", 
+                "0.0538681982230059" = "High Explicit Bias(+1SD)"))+
+  theme(legend.position = "bottom", legend.direction = "horizontal")
+
+xhist4 <- axis_canvas(p4, axis = "x") +
+  geom_histogram(data = giftedfinadd, aes(x = tblack_cc2), 
+                 color = "black",fill = "#FFFFCC")+ 
+  scale_x_continuous(lim = c(-50,70),
+                     breaks = seq(-70,70,10)) + 
+  labs(color = NULL, fill = NULL) + 
+  ds4psy::theme_ds4psy()
+
+combined_plot4 <- insert_xaxis_grob(p4, xhist4, position = "top")
+
+
+
+```
+
+```{r fig.width=18, fig.height=6}
+#| column: screen-inset
+
+# completed figure
+pfin3 <- ggdraw(combined_plot3)
+pfin4 <- ggdraw(combined_plot4)
+
+pfin3 + pfin1 + pfin4
+```
+
+#### Visualization of Suspension
+
+```{r}
+#| code-fold: true
+#| warning: false
+#| error: false
+#| echo: true
+#| message: false
+#| output: false
+#| results: hide 
+
+# model 3.3 (w/o mean centering)
+int_upper2 <- mean(suspensionfin2$wexpwhite_ct)+sd(suspensionfin2$wexpwhite_ct)
+int_lower2 <- mean(suspensionfin2$wexpwhite_ct)-sd(suspensionfin2$wexpwhite_ct)
+
+p5 <- plot_model(modeladd4, type = "pred", ci.lvl = .95,
+           terms = c("tblack [all]", glue("wexpwhite_ct[{int_lower2},{int_upper2}]"))) + 
+  scale_x_continuous(lim = c(0,100),
+    breaks = seq(0,100,10)) + 
+  ylab("Black suspended students(%)") + 
+  xlab("Black teachers(%)") +
+  labs(color = "Interaction") +  
+  ggtitle("Figure 1-B w/o mean-centering") +
+  scale_fill_manual(
+    values = c( "-0.0557089200370501" = "blue", 
+                "0.0557089200370501" = "red"),
+    labels = c( "-0.0557089200370501" = "Low Explicit Bias(-1SD)", 
+                "0.0557089200370501" = "High Explicit Bias(+1SD)"))+
+  scale_color_manual(
+    values = c( "-0.0557089200370501" = "blue", 
+                "0.0557089200370501" = "red"),
+    labels = c( "-0.0557089200370501" = "Low Explicit Bias(-1SD)", 
+                "0.0557089200370501" = "High Explicit Bias(+1SD)"))+
+  ds4psy::theme_ds4psy() +
+  theme(legend.position = "bottom", legend.direction = "horizontal") 
+  
+
+xhist5 <- axis_canvas(p5, axis = "x") +
+  geom_histogram(data = suspensionfinadd, aes(x = tblack), 
+                 color = "black",fill = "#FFFFCC") + 
+  scale_x_continuous(lim = c(0,100),
+    breaks = seq(0,100,10)) +
+  labs(color = NULL, fill = NULL) + 
+  ds4psy::theme_ds4psy()
+
+combined_plot5 <- insert_xaxis_grob(p5, xhist5, position = "top")
+
+# model 3.3 (w/ county level mean centering)
+p6 <- plot_model(modeladd6, type = "pred", ci.lvl = .95,
+           terms = c("tblack_cc2 [all]", glue("wexpwhite_ct[{int_lower2},{int_upper2}]"))) + 
+  scale_x_continuous(lim = c(-50,80),
+                     breaks = seq(-50,80,10)) + 
+  ylab("Black suspended students(%)") + 
+  xlab("Black teachers (relative to county-means) (%)") +
+  labs(color = "Interaction") +  
+  ggtitle("Figure 1-B w/ county-level mean-centering") +
+  scale_fill_manual(
+    values = c( "-0.0557089200370501" = "blue", 
+                "0.0557089200370501" = "red"),
+    labels = c( "-0.0557089200370501" = "Low Explicit Bias(-1SD)", 
+                "0.0557089200370501" = "High Explicit Bias(+1SD)"))+
+  scale_color_manual(
+    values = c( "-0.0557089200370501" = "blue", 
+                "0.0557089200370501" = "red"),
+    labels = c( "-0.0557089200370501" = "Low Explicit Bias(-1SD)", 
+                "0.0557089200370501" = "High Explicit Bias(+1SD)"))+
+  ds4psy::theme_ds4psy() +
+  theme(legend.position = "bottom", legend.direction = "horizontal") 
+  
+
+xhist6 <- axis_canvas(p6, axis = "x") +
+  geom_histogram(data = suspensionfinadd, aes(x = tblack_cc2), 
+                 color = "black",fill = "#FFFFCC") + 
+  scale_x_continuous(lim = c(-50,80),
+                     breaks = seq(-50,80,10)) +
+  labs(color = NULL, fill = NULL) + 
+  ds4psy::theme_ds4psy()
+
+combined_plot6 <- insert_xaxis_grob(p6, xhist6, position = "top")
+
+
+```
+
+```{r fig.width=18, fig.height=6}
+#| column: screen-inset
+
+# completed figure
+pfin5 <- ggdraw(combined_plot5)
+pfin6 <- ggdraw(combined_plot6)
+
+pfin5 + pfin2 + pfin6
+```
+
+### 8-4. Interpretation
+
+-   In the regression analysis of the percentage of students in gifted programs (**Section 8-1**), the alternative specifications on mean-centering significantly changed the estimates. 
+    -   The original model using grand mean-centering—which accounts for the changes in the proportion of Black teachers relative to the overall mean on active representation—showed significant negative regression coefficients for the interaction term of explicit bias and the quadratic term of the proportion of Black teachers.
+    -  When compared with the first column (without mean-centering), while the estimated regression coefficients for the quadratic term and interaction term of the percent of black teachers remained unchanged, the regression coefficient for the linear term changed, indicating a result of horizontal parallel translation (check Section 8-3 Figure As).
+    -   In contrast, when centering by controlling for the average proportion of Black teachers in each county, the same term exhibited significant positive regression coefficients at the 10% significance level. Unlike grand-mean centering, which simply translates the axis, the coefficient of the quadratic terms changed, leading to a different interpretation of the results. As can be seen from the histogram at the top of the third graph in Figure A of 8-3, many schools are around the county average, and the confidence intervals for groups with high and low explicit bias do not overlap.
+    - This suggests that the statistical significance may not necessarily stem from changes in the proportion of Black teachers within a county, but could potentially be attributed to the higher average percentage of Black teachers in certain counties, which might be influenced by various factors including explicit and implicit biases.
+    - The third column (with county-level mean-centering) contradicts original results and the paper's conclusion that explicit bias would negatively affect the impact of passive representation
+       
+-   In the regression analysis of the percentage of students in out-of-school suspensions (**Section 8-2**), the alternative specifications on mean-centering significantly also changed the estimates.
+    -   The original model using grand mean-centering—which accounts for the changes in the proportion of Black teachers relative to the overall mean on active representation—showed significant negative regression coefficients for the interaction term of explicit bias and the proportion of Black teachers.
+    - When compared with the first column (without mean-centering), while the estimated regression coefficients for the quadratic term and interaction term of the percent of black teachers remained unchanged, as in *Section 8-1*, the regression coefficient for the linear term changed, indicating a result of horizontal parallel translation (check Section 8-3 Figure Bs).
+    -   In contrast, when centering by controlling for the average proportion of Black teachers in each county, the same term was insignificantly estimated. Unlike grand-mean centering, which simply translates the axis, the coefficient of the quadratic terms changed, leading to a different interpretation of the results. As can be seen from the histogram at the top of the third graph in Figure B of 8-3, many schools are around the county average, and the confidence intervals for groups with high and low explicit bias do not overlap. 
+    - This suggests that the statistical significance may not necessarily stem from changes in the proportion of Black teachers within a county, but could potentially be attributed to the higher average percentage of Black teachers in certain counties, which might be influenced by various factors including explicit and implicit biases.
+    - The third column (with county-level mean-centering) contradicts the paper's conclusion that explicit bias would negatively affect the impact of passive representation
+
 ## 9. Conclusion
-- From the alternative analysis, it has been confirmed that the results of estimation in regression analysis can vary depending on how scaling is managed when the units of analysis for predictors (including independent and moderating variables) and dependent variables differ. 
-    - In Park & Favero (2023), grand-mean centering increases estimation stability, particularly when high correlations between variables lead to multicollinearity issues. However, this approach has limitations in distinguishing whether active representation results from a higher proportion of teachers in a particular school or simply from the average proportion of black teachers in the specific county to which the school belongs.
-   - In other words, determining whether estimation results change due to variations in teacher proportions, or arise from interactions with already high or low levels of Black teacher proportions in the county, should be taken with caution.
-- The change in results under an alternative specification using group-mean centering illustrate the need for careful analysis.
-  - When performing mean-centering, it should be noted that the results can differ based on whether the analysis aims (1) to control level-1 variables to examine the influence of level-2 variables or (2) to investigate the moderating effects of level-2 variables on within-cluster relationships through cross-level interactions.
-  - For future analyses, the unit of analysis should be carefully considered, keeping in mind the potential for ecological fallacy or reductionist fallacy.
+
+-   From the alternative analysis, it has been confirmed that the results of estimation in regression analysis can vary depending on how scaling is managed when the units of analysis for predictors (including independent and moderating variables) and dependent variables differ.
+    -   In Park & Favero (2023), grand-mean centering increases estimation stability, particularly when high correlations between variables lead to multicollinearity issues. However, this approach has limitations in distinguishing whether active representation results from a higher proportion of teachers in a particular school or simply from the average proportion of black teachers in the specific county to which the school belongs.
+    -   In other words, determining whether estimation results change due to variations in teacher proportions, or arise from interactions with already high or low levels of Black teacher proportions in the county, should be taken with caution.
+-   The change in results under an alternative specification using group-mean centering illustrate the need for careful analysis.
+    -   When performing mean-centering, it should be noted that the results can differ based on whether the analysis aims (1) to control level-1 variables to examine the influence of level-2 variables or (2) to investigate the moderating effects of level-2 variables on within-cluster relationships through cross-level interactions.
+    -   For future analyses, the unit of analysis should be carefully considered, keeping in mind the potential for ecological fallacy or reductionist fallacy.
 
 ## 10. Citation
 
