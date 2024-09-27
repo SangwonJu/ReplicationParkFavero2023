@@ -1,0 +1,6 @@
+- source: project
+  quarto-pub:
+    - id: a59914c1-8a9a-46ce-95d6-b5596c9580de
+      url: 'https://sangwonju.quarto.pub/samgwon-ju'
+    - id: a01ffcd3-6549-4ab3-be2b-4ee0df91783f
+      url: 'https://sangwonju.quarto.pub/conduct1_replication_sangwonju'
